@@ -1,0 +1,27 @@
+<?php
+
+/**
+ * @file
+ * Install, update and uninstall functions for the Superfish module.
+ */
+
+/**
+ * Implements hook_uninstall().
+ */
+function nicer_menus_uninstall() {
+  db_delete('variable')->condition('name', '%%nicer_menus%%', 'LIKE')->execute();
+  db_delete('block')->condition('module', 'nicer_menus')->execute();
+}
+
+/**
+ * Implements hook_enable().
+ */
+function nicer_menus_enable() {
+  drupal_set_message(check_plain('To use Nicer Menus go to the administer blocks page and enable a Nicer Menus block.'));
+}
+
+/**
+ * Implements hook_update_N().
+ */
+function nicer_menus_update_7100() {
+}

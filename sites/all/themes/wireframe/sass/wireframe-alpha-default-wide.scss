@@ -1,0 +1,26 @@
+/* This file will hold styles that are loaded using the same media query as the wide grid. */
+
+.block-superfish .sf-menu.sf-style-simple a, .sf-menu.sf-style-simple a:visited {
+	font-size:14px;
+	padding: 1.4em 1.35em;
+}
+#section-footer ul.menu li.expanded {
+	display: block;
+    float: left;
+    min-height: 190px;
+    position: relative;
+    width: 23%;
+}
+.not-front #zone-content aside {
+	width:280px;
+}
+
+.not-front #zone-content #region-content {
+	width:880px;
+}
+.container-12 article .grid-6{
+	width:580px;
+}
+.container-12 article .grid-3 {
+	width:280px;
+}

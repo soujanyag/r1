@@ -1,0 +1,969 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xs:schema xmlns:tns="http://membersuite.com/schemas/" elementFormDefault="qualified" targetNamespace="http://membersuite.com/schemas/" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:import namespace="http://www.w3.org/2001/XMLSchema" />
+  
+  <!-- Hand entered types-->
+  <xs:complexType name="reference" >
+    <xs:simpleContent >
+      <xs:extension base="xs:string"/>
+    </xs:simpleContent>
+  </xs:complexType>
+  <xs:complexType name="ArrayOfReference">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="unbounded" name="Object_ID" nillable="true" type="tns:reference" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="ArrayOfNameValuePair">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="unbounded" name="NameValuePair" nillable="true" type="tns:NameValuePair" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="ArrayOfCustomFieldValueHolder">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="unbounded" name="CustomFieldValueHolder" nillable="true" type="tns:CustomFieldValueHolder" />
+    </xs:sequence>
+  </xs:complexType>
+
+  <!-- Generated types -->
+  <xs:element name="ClassMetadataOverride" type="tns:ClassMetadataOverride" />
+  <xs:complexType name="ClassMetadataOverride">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="1" name="Name" type="xs:string" />
+      <xs:element minOccurs="0" maxOccurs="1" name="Module" type="xs:string" />
+      <xs:element minOccurs="0" maxOccurs="1" name="Fields" type="tns:ArrayOfFieldMetadataOverride" />
+      <xs:element minOccurs="1" maxOccurs="1" name="Createable" nillable="true" type="xs:boolean" />
+      <xs:element minOccurs="1" maxOccurs="1" name="Updateable" nillable="true" type="xs:boolean" />
+      <xs:element minOccurs="1" maxOccurs="1" name="Deletable" nillable="true" type="xs:boolean" />
+      <xs:element minOccurs="0" maxOccurs="1" name="Label" type="xs:string" />
+      <xs:element minOccurs="0" maxOccurs="1" name="LabelPlural" type="xs:string" />
+      <xs:element minOccurs="1" maxOccurs="1" name="IsSecurable" nillable="true" type="xs:boolean" />
+      <xs:element minOccurs="0" maxOccurs="1" name="ValidationRules" type="tns:ArrayOfValidationRule" />
+      <xs:element minOccurs="0" maxOccurs="1" name="FieldCalculationRules" type="tns:ArrayOfFieldCalculationRule" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="ArrayOfFieldMetadataOverride">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="unbounded" name="Field" nillable="true" type="tns:FieldMetadataOverride" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="FieldMetadataOverride">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="1" name="PickListEntries" nillable="true" type="tns:ArrayOfPickListEntry" />
+      <xs:element minOccurs="0" maxOccurs="1" name="SecurityLock" type="tns:SecurityLock" />
+    </xs:sequence>
+    <xs:attribute name="Name" type="xs:string" />
+    <xs:attribute name="Label" type="xs:string" />
+    <xs:attribute name="Namespace" type="xs:string" />
+    <xs:attribute name="PortalPrompt" type="xs:string" />
+    <xs:attribute name="HelpText" type="xs:string" />
+    <xs:attribute name="NullValueLabel" type="xs:string" />
+    <xs:attribute name="LookupTableID" type="xs:string" />
+    <xs:attribute name="ReferenceType" type="xs:string" />
+    <xs:attribute name="ReferenceContext" type="xs:string" />
+    <xs:attribute name="DefaultValue" type="xs:string" />
+    <xs:attribute name="DataType" type="xs:string" />
+    <xs:attribute name="IsSealed" type="xs:string" />
+    <xs:attribute name="DisplayType" type="xs:string" />
+    <xs:attribute name="IsRequired" type="xs:string" />
+    <xs:attribute name="IsRequiredInPortal" type="xs:string" />
+    <xs:attribute name="PortalAccessibility" type="xs:string" />
+    <xs:attribute name="DoNotDescribe" type="xs:string" />
+    <xs:attribute name="IsReadOnly" type="xs:string" />
+  </xs:complexType>
+  <xs:complexType name="ArrayOfPickListEntry">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="unbounded" name="PickListEntry" nillable="true" type="tns:PickListEntry" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="PickListEntry">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="1" name="CascadingDependencies" type="tns:ArrayOfString" />
+      <xs:element minOccurs="1" maxOccurs="1" name="WasFromLookupTable" type="xs:boolean" />
+    </xs:sequence>
+    <xs:attribute name="Value" type="xs:string" />
+    <xs:attribute name="Text" type="xs:string" />
+    <xs:attribute name="IsDefault" type="xs:boolean" use="required" />
+    <xs:attribute name="InvertCascadingDependency" type="xs:boolean" use="required" />
+    <xs:attribute name="IsActive" type="xs:string" />
+  </xs:complexType>
+  <xs:complexType name="ArrayOfString">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="unbounded" name="string" nillable="true" type="xs:string" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="SecurityLock">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="1" name="Participants" type="tns:ArrayOfSecurityLockParticipant" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="ArrayOfSecurityLockParticipant">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="unbounded" name="SecurityLockParticipant" nillable="true" type="tns:SecurityLockParticipant" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="SecurityLockParticipant">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="1" name="RoleID" type="xs:string" />
+      <xs:element minOccurs="1" maxOccurs="1" name="AccessLevel" type="tns:SecurityLockAccessLevel" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:simpleType name="SecurityLockAccessLevel">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="NoAccess" />
+      <xs:enumeration value="ReadOnly" />
+      <xs:enumeration value="ReadWrite" />
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:complexType name="ArrayOfValidationRule">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="unbounded" name="ValidationRule" nillable="true" type="tns:ValidationRule" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="ValidationRule">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="1" name="Name" type="xs:string" />
+      <xs:element minOccurs="0" maxOccurs="1" name="Expression" type="xs:string" />
+      <xs:element minOccurs="0" maxOccurs="1" name="ErrorMessage" type="xs:string" />
+      <xs:element minOccurs="1" maxOccurs="1" name="IsActive" type="xs:boolean" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="ArrayOfFieldCalculationRule">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="unbounded" name="FieldCalculationRule" nillable="true" type="tns:FieldCalculationRule" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="FieldCalculationRule">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="1" name="Name" type="xs:string" />
+      <xs:element minOccurs="1" maxOccurs="1" name="IsActive" type="xs:boolean" />
+      <xs:element minOccurs="0" maxOccurs="1" name="TargetField" type="xs:string" />
+      <xs:element minOccurs="1" maxOccurs="1" name="EvaluationOrder" type="xs:int" />
+      <xs:element minOccurs="0" maxOccurs="1" name="Expression" type="xs:string" />
+      <xs:element minOccurs="0" maxOccurs="1" name="Criteria" type="xs:string" />
+      <xs:element minOccurs="1" maxOccurs="1" name="SkipIfTargetFieldIsSet" type="xs:boolean" />
+      <xs:element minOccurs="1" maxOccurs="1" name="RunOnNewRecordsOnly" type="xs:boolean" />
+      <xs:element minOccurs="0" maxOccurs="1" name="Notes" type="xs:string" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="KeyChain">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="1" name="SecurityRoles" type="tns:ArrayOfString1" />
+      <xs:element minOccurs="0" maxOccurs="1" name="Commands" type="tns:ArrayOfString1" />
+      <xs:element minOccurs="1" maxOccurs="1" name="CanAccessAllCommands" type="xs:boolean" />
+      <xs:element minOccurs="0" maxOccurs="1" name="Reports" type="tns:ArrayOfString1" />
+      <xs:element minOccurs="1" maxOccurs="1" name="CanAccessAllReports" type="xs:boolean" />
+      <xs:element minOccurs="0" maxOccurs="1" name="Tabs" type="tns:ArrayOfString1" />
+      <xs:element minOccurs="1" maxOccurs="1" name="CanAccessAllTabs" type="xs:boolean" />
+      <xs:element minOccurs="0" maxOccurs="1" name="RecordTypes">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element ref="xs:schema" />
+            <xs:any />
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element minOccurs="1" maxOccurs="1" name="HasFullAccessToAllRecordTypes" type="xs:boolean" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="ArrayOfString1">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="unbounded" name="string" nillable="true" type="xs:string" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="CommandPreferences">
+    <xs:complexContent mixed="false">
+      <xs:extension base="tns:MetadataBase">
+        <xs:sequence>
+          <xs:element minOccurs="0" maxOccurs="1" name="Preferences">
+            <xs:complexType>
+              <xs:sequence>
+                <xs:element ref="xs:schema" />
+                <xs:any />
+              </xs:sequence>
+            </xs:complexType>
+          </xs:element>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="MetadataBase">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="1" name="Name" type="xs:string" />
+      <xs:element minOccurs="0" maxOccurs="1" name="Description" type="xs:string" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="FinancialRecurrenceTemplate" type="tns:FinancialRecurrenceTemplate" />
+  <xs:complexType name="FinancialRecurrenceTemplate">
+    <xs:sequence>
+      <xs:element minOccurs="1" maxOccurs="1" name="Type" type="tns:RecurrenceType" />
+      <xs:element minOccurs="1" maxOccurs="1" name="Date" nillable="true" type="xs:dateTime" />
+      <xs:element minOccurs="1" maxOccurs="1" name="InitialPercentage" type="xs:decimal" />
+      <xs:element minOccurs="1" maxOccurs="1" name="PeriodCount" nillable="true" type="xs:int" />
+      <xs:element minOccurs="1" maxOccurs="1" name="DayOfMonth" nillable="true" type="xs:int" />
+      <xs:element minOccurs="0" maxOccurs="1" name="CustomEntries" type="tns:ArrayOfRecurrenceEntry" />
+      <xs:element minOccurs="1" maxOccurs="1" name="BillForNextPeriodAfter" type="xs:short" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:simpleType name="RecurrenceType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="MonthlyForFixedNumberOfPeriods" />
+      <xs:enumeration value="MonthlyUntilFixedDate" />
+      <xs:enumeration value="QuarterlyForFixedNumberOfPeriods" />
+      <xs:enumeration value="QuarterlyUntilFixedDate" />
+      <xs:enumeration value="YearlyForFixedNumberOfPeriods" />
+      <xs:enumeration value="OnFixedDate" />
+      <xs:enumeration value="MonthlyIndefinitely" />
+      <xs:enumeration value="QuarterlyIndefinitely" />
+      <xs:enumeration value="YearlyIndefinitely" />
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:complexType name="ArrayOfRecurrenceEntry">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="unbounded" name="RecurrenceEntry" nillable="true" type="tns:RecurrenceEntry" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="RecurrenceEntry">
+    <xs:sequence>
+      <xs:element minOccurs="1" maxOccurs="1" name="Date" type="xs:dateTime" />
+      <xs:element minOccurs="1" maxOccurs="1" name="Percentage" type="xs:decimal" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="Search" type="tns:Search" />
+  <xs:complexType name="Search">
+    <xs:complexContent mixed="false">
+      <xs:extension base="tns:SearchOperationGroup">
+        <xs:sequence>
+          <xs:element minOccurs="0" maxOccurs="1" name="OutputColumns" type="tns:ArrayOfSearchOutputColumn" />
+          <xs:element minOccurs="0" maxOccurs="1" name="SortColumns" type="tns:ArrayOfSearchSortColumn" />
+          <xs:element minOccurs="0" maxOccurs="1" name="OutputFormat" type="xs:string" />
+          <xs:element minOccurs="1" maxOccurs="1" name="TopN" nillable="true" type="xs:int" />
+          <xs:element minOccurs="0" maxOccurs="1" name="RowLevelCommands" type="tns:ArrayOfCommandShortcut" />
+          <xs:element minOccurs="0" maxOccurs="1" name="Commands" type="tns:ArrayOfCommandShortcut" />
+        </xs:sequence>
+        <xs:attribute name="Type" type="xs:string" />
+        <xs:attribute name="Context" type="xs:string" />
+        <xs:attribute name="CountField" type="xs:string" />
+        <xs:attribute name="Module" type="xs:string" />
+        <xs:attribute name="UniqueResult" type="xs:boolean" use="required" />
+        <xs:attribute name="Label" type="xs:string" />
+        <xs:attribute name="Override" type="xs:boolean" use="required" />
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="SearchOperationGroup">
+    <xs:complexContent mixed="false">
+      <xs:extension base="tns:SearchOperation">
+        <xs:sequence>
+          <xs:element minOccurs="0" maxOccurs="1" name="Criteria" type="tns:ArrayOfSearchOperation" />
+          <xs:element minOccurs="1" maxOccurs="1" name="GroupType" type="tns:SearchOperationGroupType" />
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="SearchOperation" abstract="true">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="1" name="FieldName" type="xs:string" />
+      <xs:element minOccurs="0" maxOccurs="1" name="ValuesToOperateOn" type="tns:ArrayOfAnyType" />
+      <xs:element minOccurs="1" maxOccurs="1" name="EnableParameterization" type="xs:boolean" />
+    </xs:sequence>
+    <xs:attribute name="ID" type="xs:string" />
+  </xs:complexType>
+  <xs:complexType name="ArrayOfAnyType">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="unbounded" name="anyType" nillable="true" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="IsGreaterThanOrEqualTo">
+    <xs:complexContent mixed="false">
+      <xs:extension base="tns:SearchOperation" />
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="IsLessThan">
+    <xs:complexContent mixed="false">
+      <xs:extension base="tns:IsGreaterThanOrEqualTo" />
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="IsGreaterThan">
+    <xs:complexContent mixed="false">
+      <xs:extension base="tns:SearchOperation" />
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="IsLessThanOrEqual">
+    <xs:complexContent mixed="false">
+      <xs:extension base="tns:IsGreaterThan" />
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="SpecialOperation">
+    <xs:complexContent mixed="false">
+      <xs:extension base="tns:SearchOperation" />
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="Keyword">
+    <xs:complexContent mixed="false">
+      <xs:extension base="tns:SearchOperation" />
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="NoKeyword">
+    <xs:complexContent mixed="false">
+      <xs:extension base="tns:Keyword" />
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="IsOneOfTheFollowing">
+    <xs:complexContent mixed="false">
+      <xs:extension base="tns:SearchOperation" />
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="IsNotOneOfTheFollowing">
+    <xs:complexContent mixed="false">
+      <xs:extension base="tns:IsOneOfTheFollowing" />
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="IsBetween">
+    <xs:complexContent mixed="false">
+      <xs:extension base="tns:SearchOperation" />
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="IsNotBetween">
+    <xs:complexContent mixed="false">
+      <xs:extension base="tns:IsBetween" />
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="ContainsOneOfTheFollowing">
+    <xs:complexContent mixed="false">
+      <xs:extension base="tns:SearchOperation" />
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="DoesNotContainOneOfTheFollowing">
+    <xs:complexContent mixed="false">
+      <xs:extension base="tns:ContainsOneOfTheFollowing" />
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="Contains">
+    <xs:complexContent mixed="false">
+      <xs:extension base="tns:SearchOperation" />
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="DoesNotContain">
+    <xs:complexContent mixed="false">
+      <xs:extension base="tns:Contains" />
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="WhereClause">
+    <xs:complexContent mixed="false">
+      <xs:extension base="tns:SearchOperation">
+        <xs:sequence>
+          <xs:element minOccurs="0" maxOccurs="1" name="Clause" type="xs:string" />
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="IsBlank">
+    <xs:complexContent mixed="false">
+      <xs:extension base="tns:SearchOperation" />
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="IsNotBlank">
+    <xs:complexContent mixed="false">
+      <xs:extension base="tns:IsBlank" />
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="Equals">
+    <xs:complexContent mixed="false">
+      <xs:extension base="tns:SearchOperation" />
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="DoesNotEqual">
+    <xs:complexContent mixed="false">
+      <xs:extension base="tns:Equals" />
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="ArrayOfSearchOperation">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="unbounded" name="Criterion" nillable="true" type="tns:SearchOperation" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:simpleType name="SearchOperationGroupType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="And" />
+      <xs:enumeration value="Or" />
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:complexType name="ArrayOfSearchOutputColumn">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="unbounded" name="Column" nillable="true" type="tns:SearchOutputColumn" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="SearchOutputColumn">
+    <xs:attribute name="Name" type="xs:string" />
+    <xs:attribute name="DisplayName" type="xs:string" />
+    <xs:attribute name="AggregateFunction" type="tns:SearchOuputAggregate" use="required" />
+    <xs:attribute name="ColumnWidth" type="xs:int" use="required" />
+    <xs:attribute name="Hidden" type="xs:boolean" use="required" />
+  </xs:complexType>
+  <xs:simpleType name="SearchOuputAggregate">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="None" />
+      <xs:enumeration value="GroupBy" />
+      <xs:enumeration value="Sum" />
+      <xs:enumeration value="Average" />
+      <xs:enumeration value="Count" />
+      <xs:enumeration value="Min" />
+      <xs:enumeration value="Max" />
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:complexType name="ArrayOfSearchSortColumn">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="unbounded" name="Column" nillable="true" type="tns:SearchSortColumn" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="SearchSortColumn">
+    <xs:attribute name="Name" type="xs:string" />
+    <xs:attribute name="IsDescending" type="xs:boolean" use="required" />
+  </xs:complexType>
+  <xs:complexType name="ArrayOfCommandShortcut">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="unbounded" name="Command" nillable="true" type="tns:CommandShortcut" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="CommandShortcut">
+    <xs:attribute name="ID" type="xs:string" />
+    <xs:attribute name="Icon" type="xs:string" />
+    <xs:attribute name="HelpText" type="xs:string" />
+    <xs:attribute name="Label" type="xs:string" />
+    <xs:attribute name="State" type="xs:string" />
+    <xs:attribute name="Name" type="xs:string" />
+    <xs:attribute name="Context" type="xs:string" />
+    <xs:attribute name="Arg1" type="xs:string" />
+    <xs:attribute name="Arg2" type="xs:string" />
+    <xs:attribute name="Arg3" type="xs:string" />
+    <xs:attribute name="Arg4" type="xs:string" />
+    <xs:attribute name="ConfirmWith" type="xs:string" />
+    <xs:attribute name="AppliesIf" type="xs:string" />
+    <xs:attribute name="CommandSessionID" type="xs:string" />
+    <xs:attribute name="Target" type="tns:DisplayTarget" use="required" />
+  </xs:complexType>
+  <xs:simpleType name="DisplayTarget">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="SameWindow" />
+      <xs:enumeration value="NewWindow" />
+      <xs:enumeration value="IFrame" />
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:complexType name="RelativeDateTime">
+    <xs:sequence>
+      <xs:element minOccurs="1" maxOccurs="1" name="Units" type="xs:int" />
+      <xs:element minOccurs="1" maxOccurs="1" name="UnitType" type="tns:RelativeDateTimeUnitType" />
+      <xs:element minOccurs="1" maxOccurs="1" name="ReferencePoint" type="tns:RelativeDateTimeReferencePointType" />
+      <xs:element minOccurs="1" maxOccurs="1" name="SpecificDate" nillable="true" type="xs:dateTime" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:simpleType name="RelativeDateTimeUnitType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="Minutes" />
+      <xs:enumeration value="Hours" />
+      <xs:enumeration value="Days" />
+      <xs:enumeration value="Weeks" />
+      <xs:enumeration value="Months" />
+      <xs:enumeration value="Years" />
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="RelativeDateTimeReferencePointType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="RightNow" />
+      <xs:enumeration value="BeginningOfTheDay" />
+      <xs:enumeration value="BeginningOfTheWeek" />
+      <xs:enumeration value="BeginningOfTheMonth" />
+      <xs:enumeration value="BeginningOfTheYear" />
+      <xs:enumeration value="BeginningOfTheFiscalYear" />
+      <xs:enumeration value="SpecificDate" />
+      <xs:enumeration value="SpecificDateTime" />
+      <xs:enumeration value="SpecificTime" />
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:complexType name="FieldMetadata">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="1" name="PickListEntries" type="tns:ArrayOfPickListEntry" />
+    </xs:sequence>
+    <xs:attribute name="Name" type="xs:string" />
+    <xs:attribute name="Label" type="xs:string" />
+    <xs:attribute name="PortalPrompt" type="xs:string" />
+    <xs:attribute name="HelpText" type="xs:string" />
+    <xs:attribute name="Namespace" type="xs:string" />
+    <xs:attribute name="PortalAccessibility" type="tns:PortalAccessibility" use="required" />
+    <xs:attribute name="Type" type="tns:FieldType" use="required" />
+    <xs:attribute name="DataType" type="tns:FieldDataType" use="required" />
+    <xs:attribute name="DisplayType" type="tns:FieldDisplayType" use="required" />
+    <xs:attribute name="NullValueLabel" type="xs:string" />
+    <xs:attribute name="DeclaringType" type="xs:string" />
+    <xs:attribute name="LookupTableID" type="xs:string" />
+    <xs:attribute name="ExtensionServiceID" type="xs:string" />
+    <xs:attribute name="RelationshipTypeID" type="xs:string" />
+    <xs:attribute name="Sortable" type="xs:boolean" use="required" />
+    <xs:attribute name="Displayable" type="xs:boolean" use="required" />
+    <xs:attribute name="DefaultValue" type="xs:string" />
+    <xs:attribute name="MinimumValue" type="xs:string" />
+    <xs:attribute name="MaximumValue" type="xs:string" />
+    <xs:attribute name="ReferenceType" type="xs:string" />
+    <xs:attribute name="IsRequired" type="xs:boolean" use="required" />
+    <xs:attribute name="IsRequiredInPortal" type="xs:boolean" use="required" />
+    <xs:attribute name="IsSealed" type="xs:boolean" use="required" />
+    <xs:attribute name="IsReadOnly" type="xs:boolean" use="required" />
+    <xs:attribute name="AccessLevel" type="tns:SecurityLockAccessLevel" use="required" />
+    <xs:attribute name="DoNotDescribe" type="xs:boolean" use="required" />
+    <xs:attribute name="CustomFieldID" type="xs:string" />
+    <xs:attribute name="ReferenceTypeContext" type="xs:string" />
+    <xs:attribute name="MetadataType" type="xs:string" />
+    <xs:attribute name="Precision" type="xs:int" use="required" />
+  </xs:complexType>
+  <xs:simpleType name="PortalAccessibility">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="Full" />
+      <xs:enumeration value="ReadOnly" />
+      <xs:enumeration value="None" />
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="FieldType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="BuiltIn" />
+      <xs:enumeration value="Custom" />
+      <xs:enumeration value="Generated" />
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="FieldDataType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="Text" />
+      <xs:enumeration value="Address" />
+      <xs:enumeration value="LargeText" />
+      <xs:enumeration value="HtmlText" />
+      <xs:enumeration value="Boolean" />
+      <xs:enumeration value="Integer" />
+      <xs:enumeration value="Enum" />
+      <xs:enumeration value="Decimal" />
+      <xs:enumeration value="Image" />
+      <xs:enumeration value="Date" />
+      <xs:enumeration value="DateTime" />
+      <xs:enumeration value="Time" />
+      <xs:enumeration value="Money" />
+      <xs:enumeration value="Email" />
+      <xs:enumeration value="PhoneNumber" />
+      <xs:enumeration value="Url" />
+      <xs:enumeration value="Percentage" />
+      <xs:enumeration value="Metadata" />
+      <xs:enumeration value="List" />
+      <xs:enumeration value="ListOfObjects" />
+      <xs:enumeration value="Type" />
+      <xs:enumeration value="Reference" />
+      <xs:enumeration value="Document" />
+      <xs:enumeration value="Timestamp" />
+      <xs:enumeration value="Binary" />
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="FieldDisplayType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="TextBox" />
+      <xs:enumeration value="NumericTextBox" />
+      <xs:enumeration value="Rating" />
+      <xs:enumeration value="HtmlTextBox" />
+      <xs:enumeration value="Password" />
+      <xs:enumeration value="DatePicker" />
+      <xs:enumeration value="DateTimePicker" />
+      <xs:enumeration value="TimePicker" />
+      <xs:enumeration value="MonthDayPicker" />
+      <xs:enumeration value="MonthYearPicker" />
+      <xs:enumeration value="CheckBox" />
+      <xs:enumeration value="CheckBoxes" />
+      <xs:enumeration value="RadioButtons" />
+      <xs:enumeration value="LegacyDropDownList" />
+      <xs:enumeration value="DropDownList" />
+      <xs:enumeration value="LargeTextBox" />
+      <xs:enumeration value="ComboBox" />
+      <xs:enumeration value="CurrencyTextBox" />
+      <xs:enumeration value="EmailTextBox" />
+      <xs:enumeration value="UrlTextBox" />
+      <xs:enumeration value="ListBox" />
+      <xs:enumeration value="MultiSelectListBox" />
+      <xs:enumeration value="DualListBox" />
+      <xs:enumeration value="FileUpload" />
+      <xs:enumeration value="AjaxComboBox" />
+      <xs:enumeration value="Hyperlink" />
+      <xs:enumeration value="Image" />
+      <xs:enumeration value="Separator" />
+      <xs:enumeration value="Label" />
+      <xs:enumeration value="Address" />
+      <xs:enumeration value="Custom" />
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:complexType name="NameValuePair">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="1" name="Name" type="xs:string" />
+      <xs:element minOccurs="0" maxOccurs="1" name="Value" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="Data360ViewMetadata" type="tns:Data360ViewMetadata" />
+  <xs:complexType name="Data360ViewMetadata">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="1" name="Name" type="xs:string" />
+      <xs:element minOccurs="0" maxOccurs="1" name="AdditionalFields" type="tns:ArrayOfString2" />
+      <xs:element minOccurs="0" maxOccurs="1" name="DefaultOneClick" type="xs:string" />
+      <xs:element minOccurs="0" maxOccurs="1" name="Sections" type="tns:ArrayOfControlSection1" />
+      <xs:element minOccurs="0" maxOccurs="1" name="Searches" type="tns:ArrayOfSearch" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="ArrayOfString2">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="unbounded" name="Field" nillable="true" type="xs:string" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="ArrayOfControlSection1">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="unbounded" name="Section" nillable="true" type="tns:ControlSection" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="ControlSection">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="1" name="Text" type="xs:string" />
+      <xs:element minOccurs="0" maxOccurs="1" name="LeftControls" type="tns:ArrayOfControlMetadata" />
+      <xs:element minOccurs="0" maxOccurs="1" name="RightControls" type="tns:ArrayOfControlMetadata" />
+      <xs:element minOccurs="0" maxOccurs="1" name="Commands" type="tns:ArrayOfCommandShortcut" />
+      <xs:element minOccurs="0" maxOccurs="1" name="Reports" type="tns:ArrayOfReportLink" />
+      <xs:element minOccurs="0" maxOccurs="1" name="SubSections" type="tns:ArrayOfControlSection" />
+      <xs:element minOccurs="0" maxOccurs="1" name="SearchesToDisplay" type="tns:ArrayOfString3" />
+    </xs:sequence>
+    <xs:attribute name="Name" type="xs:string" />
+    <xs:attribute name="CopyFrom" type="xs:string" />
+    <xs:attribute name="Label" type="xs:string" />
+    <xs:attribute name="Module" type="xs:string" />
+    <xs:attribute name="Collapsible" type="xs:boolean" use="required" />
+    <xs:attribute name="Icon" type="xs:string" />
+    <xs:attribute name="DisplayOrder" type="xs:int" use="required" />
+  </xs:complexType>
+  <xs:complexType name="ArrayOfControlMetadata">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="unbounded" name="Control" nillable="true" type="tns:ControlMetadata" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="ControlMetadata">
+    <xs:complexContent mixed="false">
+      <xs:extension base="tns:FieldMetadataOverride">
+        <xs:sequence>
+          <xs:element minOccurs="0" maxOccurs="1" name="Properties" type="tns:ArrayOfControlProperty" />
+        </xs:sequence>
+        <xs:attribute name="ID" type="xs:string" />
+        <xs:attribute name="DataSource" type="xs:string" />
+        <xs:attribute name="DataSourceExpression" type="xs:string" />
+        <xs:attribute name="AcceptableValuesDataSource" type="xs:string" />
+        <xs:attribute name="AcceptableValuesDataSourceExpression" type="xs:string" />
+        <xs:attribute name="AcceptableValuesDataTextField" type="xs:string" />
+        <xs:attribute name="AcceptableValuesDataValueField" type="xs:string" />
+        <xs:attribute name="UseEntireRow" type="xs:boolean" />
+        <xs:attribute name="Columns" type="xs:int" use="required" />
+        <xs:attribute name="ErrorMessage_RequiredField" type="xs:string" />
+        <xs:attribute name="Enabled" type="xs:string" />
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="ArrayOfControlProperty">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="unbounded" name="Property" nillable="true" type="tns:ControlProperty" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="ControlProperty">
+    <xs:simpleContent>
+      <xs:extension base="xs:string">
+        <xs:attribute name="Name" type="xs:string" />
+      </xs:extension>
+    </xs:simpleContent>
+  </xs:complexType>
+  <xs:complexType name="ArrayOfReportLink">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="unbounded" name="Report" nillable="true" type="tns:ReportLink" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="ReportLink">
+    <xs:attribute name="ID" type="xs:string" />
+    <xs:attribute name="Type" type="tns:ReportLinkType" use="required" />
+    <xs:attribute name="Label" type="xs:string" />
+    <xs:attribute name="Description" type="xs:string" />
+    <xs:attribute name="Customizable" type="xs:boolean" use="required" />
+    <xs:attribute name="ExcelAvailable" type="xs:boolean" use="required" />
+    <xs:attribute name="PDFAvailable" type="xs:boolean" use="required" />
+  </xs:complexType>
+  <xs:simpleType name="ReportLinkType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="Report" />
+      <xs:enumeration value="BuiltInSearch" />
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:complexType name="ArrayOfControlSection">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="unbounded" name="SubSection" nillable="true" type="tns:ControlSection" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="ArrayOfString3">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="unbounded" name="SearchID" nillable="true" type="xs:string" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="ArrayOfSearch">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="unbounded" name="Search" nillable="true" type="tns:Search" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="ClassMetadata" type="tns:ClassMetadata" />
+  <xs:complexType name="ClassMetadata">
+    <xs:complexContent mixed="false">
+      <xs:extension base="tns:MetadataBase">
+        <xs:sequence>
+          <xs:element minOccurs="0" maxOccurs="1" name="Label" type="xs:string" />
+          <xs:element minOccurs="0" maxOccurs="1" name="LabelPlural" type="xs:string" />
+          <xs:element minOccurs="0" maxOccurs="1" name="Module" type="xs:string" />
+          <xs:element minOccurs="0" maxOccurs="1" name="Fields" type="tns:ArrayOfFieldMetadata" />
+          <xs:element minOccurs="1" maxOccurs="1" name="Createable" type="xs:boolean" />
+          <xs:element minOccurs="1" maxOccurs="1" name="Updateable" type="xs:boolean" />
+          <xs:element minOccurs="1" maxOccurs="1" name="Deletable" type="xs:boolean" />
+          <xs:element minOccurs="0" maxOccurs="1" name="ParentTypes" type="tns:ArrayOfString1" />
+          <xs:element minOccurs="0" maxOccurs="1" name="ValidationRules" type="tns:ArrayOfValidationRule" />
+          <xs:element minOccurs="0" maxOccurs="1" name="FieldCalculationRules" type="tns:ArrayOfFieldCalculationRule" />
+          <xs:element minOccurs="1" maxOccurs="1" name="IsAbstract" type="xs:boolean" />
+          <xs:element minOccurs="1" maxOccurs="1" name="IsSecurable" type="xs:boolean" />
+          <xs:element minOccurs="0" maxOccurs="1" name="CustomObjectID" type="xs:string" />
+          <xs:element minOccurs="1" maxOccurs="1" name="CanBeCachedForEntireAssociation" type="xs:boolean" />
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="ArrayOfFieldMetadata">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="unbounded" name="FieldMetadata" nillable="true" type="tns:FieldMetadata" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="CustomFieldValueHolder" type="tns:CustomFieldValueHolder" />
+  <xs:complexType name="CustomFieldValueHolder">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="1" name="Field_ID" type="xs:string" />
+      <xs:element minOccurs="0" maxOccurs="1" name="FieldName" type="xs:string" />
+      <xs:element minOccurs="1" maxOccurs="1" name="IntegerValue" nillable="true" type="xs:int" />
+      <xs:element minOccurs="1" maxOccurs="1" name="DecimalValue" nillable="true" type="xs:decimal" />
+      <xs:element minOccurs="0" maxOccurs="1" name="ReferenceValue" type="xs:string" />
+      <xs:element minOccurs="0" maxOccurs="1" name="StringValue" type="xs:string" />
+      <xs:element minOccurs="1" maxOccurs="1" name="DateTimeValue" nillable="true" type="xs:dateTime" />
+      <xs:element minOccurs="0" maxOccurs="1" name="ListValue" type="tns:ArrayOfString1" />
+      <xs:element minOccurs="1" maxOccurs="1" name="BooleanValue" nillable="true" type="xs:boolean" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="ConsoleMetadata" type="tns:ConsoleMetadata" />
+  <xs:complexType name="ConsoleMetadata">
+    <xs:complexContent mixed="false">
+      <xs:extension base="tns:MetadataBase">
+        <xs:sequence>
+          <xs:element minOccurs="0" maxOccurs="1" name="QuickSearches" type="tns:ArrayOfNameValueStringPair" />
+          <xs:element minOccurs="0" maxOccurs="1" name="Tabs" type="tns:ArrayOfTab" />
+          <xs:element minOccurs="0" maxOccurs="1" name="Resources" type="tns:ArrayOfStringResource" />
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="ArrayOfNameValueStringPair">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="unbounded" name="QuickSearch" type="tns:NameValueStringPair" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="NameValueStringPair">
+    <xs:simpleContent>
+      <xs:extension base="xs:string">
+        <xs:attribute name="Name" type="xs:string" />
+      </xs:extension>
+    </xs:simpleContent>
+  </xs:complexType>
+  <xs:complexType name="ArrayOfTab">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="unbounded" name="Tab" nillable="true" type="tns:Tab" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="Tab">
+    <xs:complexContent mixed="false">
+      <xs:extension base="tns:CommandShortcut">
+        <xs:sequence>
+          <xs:element minOccurs="0" maxOccurs="1" name="Commands" type="tns:ArrayOfCommandShortcut" />
+        </xs:sequence>
+        <xs:attribute name="IsActive" type="xs:boolean" use="required" />
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="ArrayOfStringResource">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="unbounded" name="Resource" nillable="true" type="tns:StringResource" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="StringResource">
+    <xs:simpleContent>
+      <xs:extension base="xs:string">
+        <xs:attribute name="Name" type="xs:string" />
+      </xs:extension>
+    </xs:simpleContent>
+  </xs:complexType>
+  <xs:element name="EmailTemplate" type="tns:EmailTemplate" />
+  <xs:complexType name="EmailTemplate">
+    <xs:complexContent mixed="false">
+      <xs:extension base="tns:MetadataBase">
+        <xs:sequence>
+          <xs:element minOccurs="0" maxOccurs="1" name="DisplayName" type="xs:string" />
+          <xs:element minOccurs="0" maxOccurs="1" name="SearchType" type="xs:string" />
+          <xs:element minOccurs="0" maxOccurs="1" name="SearchContext" type="xs:string" />
+          <xs:element minOccurs="0" maxOccurs="1" name="FromName" type="xs:string" />
+          <xs:element minOccurs="0" maxOccurs="1" name="To" type="xs:string" />
+          <xs:element minOccurs="0" maxOccurs="1" name="Cc" type="xs:string" />
+          <xs:element minOccurs="0" maxOccurs="1" name="Bcc" type="xs:string" />
+          <xs:element minOccurs="0" maxOccurs="1" name="Subject" type="xs:string" />
+          <xs:element minOccurs="0" maxOccurs="1" name="HtmlBody" type="xs:string" />
+          <xs:element minOccurs="0" maxOccurs="1" name="TextBody" type="xs:string" />
+          <xs:element minOccurs="0" maxOccurs="1" name="ReplyTo" type="xs:string" />
+          <xs:element minOccurs="0" maxOccurs="1" name="ProcessingOptions" type="tns:ArrayOfNameValueStringPair1" />
+          <xs:element minOccurs="0" maxOccurs="1" name="SubSearches" type="tns:ArrayOfSearch" />
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="ArrayOfNameValueStringPair1">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="unbounded" name="Property" type="tns:NameValueStringPair" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="Address">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="1" name="Company" type="xs:string" />
+      <xs:element minOccurs="0" maxOccurs="1" name="Line1" type="xs:string" />
+      <xs:element minOccurs="0" maxOccurs="1" name="Line2" type="xs:string" />
+      <xs:element minOccurs="0" maxOccurs="1" name="City" type="xs:string" />
+      <xs:element minOccurs="0" maxOccurs="1" name="State" type="xs:string" />
+      <xs:element minOccurs="0" maxOccurs="1" name="PostalCode" type="xs:string" />
+      <xs:element minOccurs="0" maxOccurs="1" name="Country" type="xs:string" />
+      <xs:element minOccurs="0" maxOccurs="1" name="County" type="xs:string" />
+      <xs:element minOccurs="0" maxOccurs="1" name="CongressionalDistrict" type="xs:string" />
+      <xs:element minOccurs="0" maxOccurs="1" name="CASSCertificationDate" nillable="true" type="xs:dateTime" />
+      <xs:element minOccurs="0" maxOccurs="1" name="CASSCertificationErrorMessage" type="xs:string" />
+      <xs:element minOccurs="0" maxOccurs="1" name="CarrierRoute" type="xs:string" />
+      <xs:element minOccurs="0" maxOccurs="1" name="DeliveryPointCode" type="xs:string" />
+      <xs:element minOccurs="0" maxOccurs="1" name="DeliveryPointCheckDigit" type="xs:string" />
+      <xs:element minOccurs="0" maxOccurs="1" name="GeocodeLat" nillable="true" type="xs:decimal" />
+      <xs:element minOccurs="0" maxOccurs="1" name="GeocodeLong" nillable="true" type="xs:decimal" />
+      <xs:element minOccurs="0" maxOccurs="1" name="LastGeocodeDate" nillable="true" type="xs:dateTime" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="DashboardMetadata" type="tns:DashboardMetadata" />
+  <xs:complexType name="DashboardMetadata">
+    <xs:complexContent mixed="false">
+      <xs:extension base="tns:MetadataBase">
+        <xs:sequence>
+          <xs:element minOccurs="0" maxOccurs="1" name="LeftWidgets" type="tns:ArrayOfWidgetDefinition" />
+          <xs:element minOccurs="0" maxOccurs="1" name="RightWidgets" type="tns:ArrayOfWidgetDefinition" />
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="ArrayOfWidgetDefinition">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="unbounded" name="Widget" nillable="true" type="tns:WidgetDefinition" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="WidgetDefinition">
+    <xs:complexContent mixed="false">
+      <xs:extension base="tns:MetadataBase">
+        <xs:sequence>
+          <xs:element minOccurs="0" maxOccurs="1" name="Properties" type="tns:ArrayOfNameValueStringPair1" />
+          <xs:element minOccurs="0" maxOccurs="1" name="Label" type="xs:string" />
+          <xs:element minOccurs="0" maxOccurs="1" name="Control" type="xs:string" />
+          <xs:element minOccurs="0" maxOccurs="1" name="Category" type="xs:string" />
+          <xs:element minOccurs="0" maxOccurs="1" name="Icon" type="xs:string" />
+          <xs:element minOccurs="1" maxOccurs="1" name="Collapsed" type="xs:boolean" />
+          <xs:element minOccurs="1" maxOccurs="1" name="DefaultOnLeftSide" type="xs:boolean" />
+        </xs:sequence>
+        <xs:attribute name="ID" type="xs:string" />
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:element name="DataEntryViewMetadata" type="tns:DataEntryViewMetadata" />
+  <xs:complexType name="DataEntryViewMetadata">
+    <xs:complexContent mixed="false">
+      <xs:extension base="tns:MetadataBase">
+        <xs:sequence>
+          <xs:element minOccurs="0" maxOccurs="1" name="LeftColumnHeader" type="xs:string" />
+          <xs:element minOccurs="0" maxOccurs="1" name="RightColumnHeader" type="xs:string" />
+          <xs:element minOccurs="0" maxOccurs="1" name="Steps" type="tns:ArrayOfStepDef" />
+          <xs:element minOccurs="0" maxOccurs="1" name="UsefulTips" type="tns:UsefulTipsDef" />
+          <xs:element minOccurs="0" maxOccurs="1" name="Sections" type="tns:ArrayOfControlSection1" />
+          <xs:element minOccurs="1" maxOccurs="1" name="HideLeftColumn" type="xs:boolean" />
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="ArrayOfStepDef">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="unbounded" name="Step" nillable="true" type="tns:StepDef" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="StepDef">
+    <xs:complexContent mixed="false">
+      <xs:extension base="tns:CommandShortcut">
+        <xs:attribute name="IsCurrent" type="xs:boolean" use="required" />
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="UsefulTipsDef">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="1" name="Tips" type="tns:ArrayOfCommandShortcut1" />
+    </xs:sequence>
+    <xs:attribute name="Show" type="xs:boolean" use="required" />
+    <xs:attribute name="Label" type="xs:string" />
+  </xs:complexType>
+  <xs:complexType name="ArrayOfCommandShortcut1">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="unbounded" name="Tip" nillable="true" type="tns:CommandShortcut" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="WriteOffInvoicesJobManifest">
+    <xs:sequence>
+      <xs:element minOccurs="1" maxOccurs="1" name="Date" type="xs:dateTime" />
+      <xs:element minOccurs="1" maxOccurs="1" name="Method" type="tns:WriteOffMethod" />
+      <xs:element minOccurs="0" maxOccurs="1" name="WriteOfGLAccount" type="xs:string" />
+      <xs:element minOccurs="0" maxOccurs="1" name="Memo" type="xs:string" />
+      <xs:element minOccurs="0" maxOccurs="1" name="Batch" type="xs:string" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:simpleType name="WriteOffMethod">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="Allowance" />
+      <xs:enumeration value="Direct" />
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:element name="DuplicateDetectionRule" type="tns:DuplicateDetectionRule" />
+  <xs:complexType name="DuplicateDetectionRule">
+    <xs:complexContent mixed="false">
+      <xs:extension base="tns:MetadataBase">
+        <xs:sequence>
+          <xs:element minOccurs="0" maxOccurs="1" name="Type" type="xs:string" />
+          <xs:element minOccurs="0" maxOccurs="1" name="Fields" type="tns:ArrayOfDetectionField" />
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="ArrayOfDetectionField">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="unbounded" name="DetectionField" nillable="true" type="tns:DetectionField" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="DetectionField">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="1" name="Name" type="xs:string" />
+      <xs:element minOccurs="1" maxOccurs="1" name="MatchType" type="tns:DuplicateDetectionMatchMode" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:simpleType name="DuplicateDetectionMatchMode">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="ExactMatch" />
+      <xs:enumeration value="Fuzzy" />
+      <xs:enumeration value="CommonFirstNames" />
+    </xs:restriction>
+  </xs:simpleType>
+</xs:schema>
+

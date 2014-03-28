@@ -1,0 +1,13 @@
+#views_slideshow_cycle_teaser_section_featured_content-block .views-field-field-ss-headline{
+    position:absolute;
+    top:0px;
+    left:0px;
+    z-index:99;
+    padding:10px;
+    color:#cccccc;
+    text-shadow: none;
+}
+#views_slideshow_cycle_teaser_section_featured_content-block .views-field-field-ss-headline a{
+    color:#ccc;
+    text-shadow: 2px 2px #000000;
+}

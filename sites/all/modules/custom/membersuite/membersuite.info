@@ -1,0 +1,5 @@
+name = MemberSuite Integration
+description = Provides SSO and other web service integration with MemberSuite
+core = 7.x
+package = NT Custom
+version = 7.1

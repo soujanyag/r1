@@ -1,0 +1,6 @@
+What is MemberSuite and how is it connected?
+WCAG 2.0 LEVEL AA
+Redirect non-www to www
+Redirect old URLS to new paths of drupal
+Implement Google Analytics (Need code ?)
+SEF Meta key words

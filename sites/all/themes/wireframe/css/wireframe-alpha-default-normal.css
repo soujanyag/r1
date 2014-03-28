@@ -1,0 +1,50 @@
+/* This file will hold styles that are loaded using the same media query as the normal grid. */
+/* If you are using the default media queries provided by Omega, these styles will also
+ *  apply to the widescreen layout unless they are overridden by the widescreen styles. */
+/* line 5, ../sass/wireframe-alpha-default-normal.scss */
+.block-superfish .sf-menu.sf-style-simple a, .sf-menu.sf-style-simple a:visited {
+  font-size: 13px;
+  padding: 1.4em 0.76em;
+}
+
+/* line 9, ../sass/wireframe-alpha-default-normal.scss */
+#section-footer ul.menu li.expanded {
+  display: block;
+  float: left;
+  min-height: 190px;
+  position: relative;
+  width: 31%;
+}
+
+/* line 16, ../sass/wireframe-alpha-default-normal.scss */
+.container-12 article .grid-6 {
+  width: 460px;
+}
+
+/* line 19, ../sass/wireframe-alpha-default-normal.scss */
+.container-12 article .grid-3 {
+  width: 220px;
+}
+
+/* line 23, ../sass/wireframe-alpha-default-normal.scss */
+.not-front #zone-content aside {
+  width: 220px;
+}
+
+/* line 27, ../sass/wireframe-alpha-default-normal.scss */
+.not-front #zone-content #region-content {
+  width: 700px;
+  float: right;
+}
+
+/* line 31, ../sass/wireframe-alpha-default-normal.scss */
+.not-front #zone-content aside .block-menu-block {
+  border-top: 0;
+  border-bottom: 0;
+}
+
+/* line 35, ../sass/wireframe-alpha-default-normal.scss */
+#block-block-24 p {
+  display: block;
+  width: 100%;
+}

@@ -1,0 +1,947 @@
+<?php
+
+/**
+ * Main file for NT Utilties
+ */
+
+/**
+ * Implementation of hook_menu()
+ * @return array
+ */
+function nt_utilities_menu() {
+
+  //this provides a custom login redirection
+  $items['user-login-redirector'] = array(
+      'title' => 'User Login Redirector',
+      'description' => 'User Login Redirector',
+      'page callback' => '_nt_utilities_user_login_redirector',
+      'access arguments' => array('access content'),
+      'type' => MENU_CALLBACK,
+  );
+  
+  $items['utilities-modal'] = array(
+    'title' => 'Node Modal',
+    'page callback' => '_nt_utilities_view_node',
+    'access arguments' => array('access content'),
+    'file' => 'nt_utilities.pages.inc',
+    'type' => MENU_CALLBACK,
+  );
+  
+
+  return $items;
+}
+
+/**
+ * Implementation of hook_init()
+ */
+function nt_utilities_init() {
+}
+
+
+/**
+ * Callback for user-login-redirector
+ * @global type $user
+ * @param type $path
+ */
+function _nt_utilities_user_login_redirector($path = NULL) {
+  if (module_exists('domain')) {
+    //get current domain
+    global $_domain;
+    $path = $_domain['path'] . $path;
+  }
+    
+  if ($path != NULL) {
+    drupal_goto($path);
+  } else {
+    drupal_goto('user');
+  }
+}
+
+/**
+ * $str = starting time in any format except timestap
+ * $end = ending time in any format except timestap
+ * @param type $str
+ * @param type $end
+ */
+function _nt_utilities_format_startend_times($str, $end) {
+  $str_time = strtotime($str);
+  $end_time = strtotime($end);
+
+  $str_year = date("Y", $str_time);
+  $end_year = date("Y", $end_time);
+
+  $str_month = date("M", $str_time);
+  $end_month = date("M", $end_time);
+
+  $str_date = date("d", $end_time);
+  $end_date = date("d", $end_time);
+
+  if ($str_year == $end_year) {
+    $output = date("M d", $str_time);
+
+    if ($str_month == $end_month) {
+      if ($str_date == $end_date) {
+        $output .= ", ";
+      } else {
+        $output .= " - ";
+        $output .= date("d", $end_time);
+        $output .= ", ";
+      }
+    } else {
+      $output .= " - ";
+      $output .= date("M d", $end_time);
+      $output .= ", ";
+    }
+
+    $output .= $str_year;
+  } else {
+    $output = date("M d, Y", $str_time);
+    $output .= " - ";
+    $output .= date("M d, Y", $end_time);
+  }
+
+
+  return $output;
+}
+
+/**
+ * This function parses the url to see if there is a qurery already present
+ * If yes, then returns append with &
+ * Else, returns with ?
+ * @param type $url
+ */
+function _nt_utilities_appendto_url($url) {
+  $parsedurl = parse_url($url);
+
+  if (isset($parsedurl['query'])) {
+    $token_append = '&';
+  } else {
+    $token_append = '?';
+  }
+
+  return $url . $token_append;
+}
+
+function _nt_utilities_return_without_dashes($str) {
+  $string = str_replace("-", " ", $str);
+  return ucwords($string);
+}
+function get_startend_custom_format($start,$end){
+     $start = _nt_utilities_tz_offset($start);
+      $end  = _nt_utilities_tz_offset($end);
+      
+      $startDate = date('Y-m-d', $start);
+      $endDate = date('Y-m-d', $end);
+      if ($startDate == $endDate) {
+        $startTime = date('h:ia', $start);
+        $endTime = date('h:ia', $end);
+        if ($startTime == $endTime) {
+          return format_date($start, $format);
+        }else{
+          return format_date($start, $format) . ' - ' . $endTime;
+        }
+      }
+      elseif($startDate != $endDate){
+           return format_date($start, $format) . ' - ' . format_date($end , $format);
+      }
+      
+      return format_date($start, $format);
+}
+function _integration_get_event_date_by_delta($nid, $delta = 0, $format= 'long') {
+  if (is_numeric($delta)) {
+    $datetime = db_query("SELECT field_event_dates_value, field_event_dates_value2 FROM {field_data_field_event_dates} WHERE delta = :delta AND entity_id = :nid", array(':delta' => $delta, ':nid' => $nid))->fetchAll();
+    foreach($datetime as $time) {
+      $start = _nt_utilities_tz_offset($time->field_event_dates_value);
+      $end  = _nt_utilities_tz_offset($time->field_event_dates_value2);
+      
+      $startDate = date('Y-m-d', $start);
+      $endDate = date('Y-m-d', $end);
+      if ($startDate == $endDate) {
+        $startTime = date('h:ia', $start);
+        $endTime = date('h:ia', $end);
+        if ($startTime == $endTime) {
+          return format_date($start, $format);
+        }else{
+          return format_date($start, $format) . ' - ' . $endTime;
+        }
+      }
+      
+      return format_date($start, $format);
+    }
+  }
+}
+/**
+ * Turns the $str into a url like string
+ * Example:
+ * Given "New York", it returns "new-york"
+ * @TODO: Make it sync with the URL patterns configured in admin UI
+ * @param type $str
+ */
+function _nt_utilities_encode_url($str) {
+
+  module_load_include('inc', 'pathauto', 'pathauto');
+  return pathauto_cleanstring($str);
+}
+
+/**
+ * Returns an array for month options to use in select field elements
+ * @param type $month_mode: short or long
+ * @return type
+ */
+function _nt_utilities_month_options($month_mode) {
+
+  if ($month_mode == 'long') {
+    return array(
+        '01' => 'January',
+        '02' => 'February',
+        '03' => 'March',
+        '04' => 'April',
+        '05' => 'May',
+        '06' => 'June',
+        '07' => 'July',
+        '08' => 'August',
+        '09' => 'September',
+        '10' => 'October',
+        '11' => 'November',
+        '12' => 'December',
+    );
+  } else {
+    return array(
+        '01' => 'Jan',
+        '02' => 'Feb',
+        '03' => 'Mar',
+        '04' => 'Apr',
+        '05' => 'May',
+        '06' => 'Jun',
+        '07' => 'Jul',
+        '08' => 'Aug',
+        '09' => 'Sep',
+        '10' => 'Oct',
+        '11' => 'Nov',
+        '12' => 'Dec',
+    );
+  }
+}
+
+/**
+ * Gives list of years as array to be used in select field elements
+ * @param type $start_year: if not provided defaults to current year
+ * @param type $limit: if not provided defaults to 10
+ * @return type
+ */
+function _nt_utilities_year_options($start_year = NULL, $limit = NULL) {
+
+  $start_year = $start_year ? $start_year : date("Y", time());
+
+  $limit = $limit ? $limit : 10;
+
+  for ($i = $start_year; $i < $limit; $i++) {
+    $years[$i] = $i;
+  }
+
+  return $years;
+}
+
+/**
+ * Given the nodeValue of an element parsed by DOM
+ * This function returns the inner HTML for that
+ * @param type $node
+ * @return type
+ */
+function _nt_utilities_innerXML($node) {
+  $doc = $node->ownerDocument;
+  $frag = $doc->createDocumentFragment();
+  foreach ($node->childNodes as $child) {
+    $frag->appendChild($child->cloneNode(TRUE));
+  }
+  return $doc->saveXML($frag);
+}
+
+/* ==================================
+  Replaces special characters with non-special equivalents
+  ================================== */
+
+function _nt_utilities_normalize_spl_chars($str) {
+  # Quotes cleanup
+  $str = ereg_replace(chr(ord("`")), "'", $str);        # `
+  $str = ereg_replace(chr(ord("´")), "'", $str);        # ´
+  $str = ereg_replace(chr(ord("„")), ",", $str);        # „
+  $str = ereg_replace(chr(ord("`")), "'", $str);        # `
+  $str = ereg_replace(chr(ord("´")), "'", $str);        # ´
+  $str = ereg_replace(chr(ord("“")), "\"", $str);        # “
+  $str = ereg_replace(chr(ord("�?")), "\"", $str);        # �?
+  $str = ereg_replace(chr(ord("´")), "'", $str);        # ´
+
+  $unwanted_array = array('Š' => 'S', 'š' => 's', 'Ž' => 'Z', 'ž' => 'z', 'À' => 'A', '�?' => 'A', 'Â' => 'A', 'Ã' => 'A', 'Ä' => 'A', 'Å' => 'A', 'Æ' => 'A', 'Ç' => 'C', 'È' => 'E', 'É' => 'E',
+      'Ê' => 'E', 'Ë' => 'E', 'Ì' => 'I', '�?' => 'I', 'Î' => 'I', '�?' => 'I', 'Ñ' => 'N', 'Ò' => 'O', 'Ó' => 'O', 'Ô' => 'O', 'Õ' => 'O', 'Ö' => 'O', 'Ø' => 'O', 'Ù' => 'U',
+      'Ú' => 'U', 'Û' => 'U', 'Ü' => 'U', '�?' => 'Y', 'Þ' => 'B', 'ß' => 'Ss', 'à' => 'a', 'á' => 'a', 'â' => 'a', 'ã' => 'a', 'ä' => 'a', 'å' => 'a', 'æ' => 'a', 'ç' => 'c',
+      'è' => 'e', 'é' => 'e', 'ê' => 'e', 'ë' => 'e', 'ì' => 'i', 'í' => 'i', 'î' => 'i', 'ï' => 'i', 'ð' => 'o', 'ñ' => 'n', 'ò' => 'o', 'ó' => 'o', 'ô' => 'o', 'õ' => 'o',
+      'ö' => 'o', 'ø' => 'o', 'ù' => 'u', 'ú' => 'u', 'û' => 'u', 'ý' => 'y', 'ý' => 'y', 'þ' => 'b', 'ÿ' => 'y');
+  $str = strtr($str, $unwanted_array);
+
+  # Bullets, dashes, and trademarks
+  $str = ereg_replace(chr(149), "&#8226;", $str);    # bullet •
+  $str = ereg_replace(chr(150), "&ndash;", $str);    # en dash
+  $str = ereg_replace(chr(151), "&mdash;", $str);    # em dash
+  $str = ereg_replace(chr(153), "&#8482;", $str);    # trademark
+  $str = ereg_replace(chr(169), "&copy;", $str);    # copyright mark
+  $str = ereg_replace(chr(174), "&reg;", $str);        # registration mark
+
+  return $str;
+}
+
+function _nt_utilities_grab_inline_img($content, $img_src_prefix) {
+  //we escape this string as this typically contains forward slash / and that 
+  //is not a literal in regex
+  $img_src_prefix_es = _nt_utilities_escape_regx_string($img_src_prefix);
+
+  //we match the images specified by the prefix and grab it into array
+  $img_src = preg_match('/src="' . $img_src_prefix_es . '(.)*\.(jpg|png|jpeg|gif|JPG|JPEG|PNG|GIF)"/i', $content, $images);
+
+  if (count($images) > 0) {
+    $image_src = $images[0];
+    //change the file paths to drupal sites path
+    //this allows us to use feeds to fetch the image and make it as a field
+    //we need absolute path for some reason, otherwise, it does not work
+    $remove = array('src=', '=');
+    $image_old_path = str_replace($remove, '', $image_src);
+    $image_old_path = str_replace($img_src_prefix, 'http://artsdev.newtarget.net/sites/default/files/', $image_old_path);
+    $image_new_path = str_replace('"', '', $image_old_path);
+  }
+
+  //replace the inline image with nothing as we are moving it to field
+  //we find only that image which was found initially
+  $content = preg_replace('/<img.*src="' . $img_src_prefix_es . '.*>/', '', $content, 1);
+
+
+  return array('img_path' => $image_new_path, 'content' => $content);
+}
+
+function _nt_utilities_escape_regx_string($str, $option = '/') {
+  $str = str_replace($option, '\/', $str);
+  return $str;
+}
+
+function _nt_utilities_get_month_by_num($num) {
+  $months = _nt_utilities_month_options('long');
+  return $months[$num];
+}
+
+function _nt_utilities_get_countries($key_mode = 'full') {
+  $countries = array(
+      'United States' => 'United States',
+      'Afghanistan' => 'Afghanistan',
+      'Albania' => 'Albania',
+      'Algeria' => 'Algeria',
+      'American Samoa' => 'American Samoa',
+      'Andorra' => 'Andorra',
+      'Angola' => 'Angola',
+      'Anguilla' => 'Anguilla',
+      'Antigua and Barbuda' => 'Antigua and Barbuda',
+      'Argentina' => 'Argentina',
+      'Armenia' => 'Armenia',
+      'Aruba' => 'Aruba',
+      'Australia' => 'Australia',
+      'Austria' => 'Austria',
+      'Azerbaijan' => 'Azerbaijan',
+      'The Bahamas' => 'The Bahamas',
+      'Bahrain' => 'Bahrain',
+      'Bangladesh' => 'Bangladesh',
+      'Barbados' => 'Barbados',
+      'Belarus' => 'Belarus',
+      'Belgium' => 'Belgium',
+      'Belize' => 'Belize',
+      'Benin' => 'Benin',
+      'Bermuda' => 'Bermuda',
+      'Bhutan' => 'Bhutan',
+      'Bolivia' => 'Bolivia',
+      'Bosnia and Herzegovina' => 'Bosnia and Herzegovina',
+      'Botswana' => 'Botswana',
+      'Brazil' => 'Brazil',
+      'Brunei' => 'Brunei',
+      'Bulgaria' => 'Bulgaria',
+      'Burkina Faso' => 'Burkina Faso',
+      'Burundi' => 'Burundi',
+      'Cambodia' => 'Cambodia',
+      'Cameroon' => 'Cameroon',
+      'Canada' => 'Canada',
+      'Cape Verde' => 'Cape Verde',
+      'Cayman Islands' => 'Cayman Islands',
+      'Central African Republic' => 'Central African Republic',
+      'Chad' => 'Chad',
+      'Chile' => 'Chile',
+      "People's Republic of China" => "People's Republic of China",
+      'Republic of China' => 'Republic of China',
+      'Christmas Island' => 'Christmas Island',
+      'Cocos (Keeling) Islands' => 'Cocos (Keeling) Islands',
+      'Colombia' => 'Colombia',
+      'Comoros' => 'Comoros',
+      'Congo' => 'Congo',
+      'Cook Islands' => 'Cook Islands',
+      'Costa Rica' => 'Costa Rica',
+      "Cote d'Ivoire" => "Cote d'Ivoire",
+      'Croatia' => 'Croatia',
+      'Cuba' => 'Cuba',
+      'Cyprus' => 'Cyprus',
+      'Czech Republic' => 'Czech Republic',
+      'Denmark' => 'Denmark',
+      'Djibouti' => 'Djibouti',
+      'Dominica' => 'Dominica',
+      'Dominican Republic' => 'Dominican Republic',
+      'Ecuador' => 'Ecuador',
+      'Egypt' => 'Egypt',
+      'El Salvador' => 'El Salvador',
+      'Equatorial Guinea' => 'Equatorial Guinea',
+      'Eritrea' => 'Eritrea',
+      'Estonia' => 'Estonia',
+      'Ethiopia' => 'Ethiopia',
+      'Falkland Islands' => 'Falkland Islands',
+      'Faroe Islands' => 'Faroe Islands',
+      'Fiji' => 'Fiji',
+      'Finland' => 'Finland',
+      'France' => 'France',
+      'French Polynesia' => 'French Polynesia',
+      'Gabon' => 'Gabon',
+      'The Gambia' => 'The Gambia',
+      'Georgia' => 'Georgia',
+      'Germany' => 'Germany',
+      'Ghana' => 'Ghana',
+      'Gibraltar' => 'Gibraltar',
+      'Greece' => 'Greece',
+      'Greenland' => 'Greenland',
+      'Grenada' => 'Grenada',
+      'Guadeloupe' => 'Guadeloupe',
+      'Guam' => 'Guam',
+      'Guatemala' => 'Guatemala',
+      'Guernsey' => 'Guernsey',
+      'Guinea' => 'Guinea',
+      'Guinea-Bissau' => 'Guinea-Bissau',
+      'Guyana' => 'Guyana',
+      'Haiti' => 'Haiti',
+      'Honduras' => 'Honduras',
+      'Hong Kong' => 'Hong Kong',
+      'Hungary' => 'Hungary',
+      'Iceland' => 'Iceland',
+      'India' => 'India',
+      'Indonesia' => 'Indonesia',
+      'Iran' => 'Iran',
+      'Iraq' => 'Iraq',
+      'Ireland' => 'Ireland',
+      'Israel' => 'Israel',
+      'Italy' => 'Italy',
+      'Jamaica' => 'Jamaica',
+      'Japan' => 'Japan',
+      'Jersey' => 'Jersey',
+      'Jordan' => 'Jordan',
+      'Kazakhstan' => 'Kazakhstan',
+      'Kenya' => 'Kenya',
+      'Kiribati' => 'Kiribati',
+      'North Korea' => 'North Korea',
+      'South Korea' => 'South Korea',
+      'Kosovo' => 'Kosovo',
+      'Kuwait' => 'Kuwait',
+      'Kyrgyzstan' => 'Kyrgyzstan',
+      'Laos' => 'Laos',
+      'Latvia' => 'Latvia',
+      'Lebanon' => 'Lebanon',
+      'Lesotho' => 'Lesotho',
+      'Liberia' => 'Liberia',
+      'Libya' => 'Libya',
+      'Liechtenstein' => 'Liechtenstein',
+      'Lithuania' => 'Lithuania',
+      'Luxembourg' => 'Luxembourg',
+      'Macau' => 'Macau',
+      'Macedonia' => 'Macedonia',
+      'Madagascar' => 'Madagascar',
+      'Malawi' => 'Malawi',
+      'Malaysia' => 'Malaysia',
+      'Maldives' => 'Maldives',
+      'Mali' => 'Mali',
+      'Malta' => 'Malta',
+      'Marshall Islands' => 'Marshall Islands',
+      'Martinique' => 'Martinique',
+      'Mauritania' => 'Mauritania',
+      'Mauritius' => 'Mauritius',
+      'Mayotte' => 'Mayotte',
+      'Mexico' => 'Mexico',
+      'Micronesia' => 'Micronesia',
+      'Moldova' => 'Moldova',
+      'Monaco' => 'Monaco',
+      'Mongolia' => 'Mongolia',
+      'Montenegro' => 'Montenegro',
+      'Montserrat' => 'Montserrat',
+      'Morocco' => 'Morocco',
+      'Mozambique' => 'Mozambique',
+      'Myanmar' => 'Myanmar',
+      "Nagorno-Karabakh" => 'Nagorno-Karabakh',
+      'Namibia' => 'Namibia',
+      'Nauru' => 'Nauru',
+      'Nepal' => 'Nepal',
+      'Netherlands' => 'Netherlands',
+      'Netherlands Antilles' => 'Netherlands Antilles',
+      'New Caledonia' => 'New Caledonia',
+      'New Zealand' => 'New Zealand',
+      'Nicaragua' => 'Nicaragua',
+      'Niger' => 'Niger',
+      'Nigeria' => 'Nigeria',
+      'Niue' => 'Niue',
+      'Norfolk Island' => 'Norfolk Island',
+      'Turkish Republic of Northern Cyprus' => 'Turkish Republic of Northern Cyprus',
+      'Northern Mariana' => 'Northern Mariana',
+      'Norway' => 'Norway',
+      'Oman' => 'Oman',
+      'Pakistan' => 'Pakistan',
+      'Palau' => 'Palau',
+      'Palestine' => 'Palestine',
+      'Panama' => 'Panama',
+      'Papua New Guinea' => 'Papua New Guinea',
+      'Paraguay' => 'Paraguay',
+      'Peru' => 'Peru',
+      'Philippines' => 'Philippines',
+      'Pitcairn Islands' => 'Pitcairn Islands',
+      'Poland' => 'Poland',
+      'Portugal' => 'Portugal',
+      'Puerto Rico' => 'Puerto Rico',
+      'Qatar' => 'Qatar',
+      'Romania' => 'Romania',
+      'Russia' => 'Russia',
+      'Rwanda' => 'Rwanda',
+      'Saint Barthelemy' => 'Saint Barthelemy',
+      'Saint Helena' => 'Saint Helena',
+      'Saint Kitts and Nevis' => 'Saint Kitts and Nevis',
+      'Saint Lucia' => 'Saint Lucia',
+      'Saint Martin' => 'Saint Martin',
+      'Saint Pierre and Miquelon' => 'Saint Pierre and Miquelon',
+      'Saint Vincent and the Grenadines' => 'Saint Vincent and the Grenadines',
+      'Samoa' => 'Samoa',
+      'San Marino' => 'San Marino',
+      'Sao Tome and Principe' => 'Sao Tome and Principe',
+      'Saudi Arabia' => 'Saudi Arabia',
+      'Senegal' => 'Senegal',
+      'Serbia' => 'Serbia',
+      'Seychelles' => 'Seychelles',
+      'Sierra Leone' => 'Sierra Leone',
+      'Singapore' => 'Singapore',
+      'Slovakia' => 'Slovakia',
+      'Slovenia' => 'Slovenia',
+      'Solomon Islands' => 'Solomon Islands',
+      'Somalia' => 'Somalia',
+      'Somaliland' => 'Somaliland',
+      'South Africa' => 'South Africa',
+      'South Ossetia' => 'South Ossetia',
+      'Spain' => 'Spain',
+      'Sri Lanka' => 'Sri Lanka',
+      'Sudan' => 'Sudan',
+      'Suriname' => 'Suriname',
+      'Svalbard' => 'Svalbard',
+      'Swaziland' => 'Swaziland',
+      'Sweden' => 'Sweden',
+      'Switzerland' => 'Switzerland',
+      'Syria' => 'Syria',
+      'Taiwan' => 'Taiwan',
+      'Tajikistan' => 'Tajikistan',
+      'Tanzania' => 'Tanzania',
+      'Thailand' => 'Thailand',
+      "Timor-Leste" => 'Timor-Leste',
+      'Togo' => 'Togo',
+      'Tokelau' => 'Tokelau',
+      'Tonga' => 'Tonga',
+      'Transnistria Pridnestrovie' => 'Transnistria Pridnestrovie',
+      'Trinidad and Tobago' => 'Trinidad and Tobago',
+      'Tristan da Cunha' => 'Tristan da Cunha',
+      'Tunisia' => 'Tunisia',
+      'Turkey' => 'Turkey',
+      'Turkmenistan' => 'Turkmenistan',
+      'Turks and Caicos Islands' => 'Turks and Caicos Islands',
+      'Tuvalu' => 'Tuvalu',
+      'Uganda' => 'Uganda',
+      'Ukraine' => 'Ukraine',
+      'United Arab Emirates' => 'United Arab Emirates',
+      'United Kingdom' => 'United Kingdom',
+      'Uruguay' => 'Uruguay',
+      'Uzbekistan' => 'Uzbekistan',
+      'Vanuatu' => 'Vanuatu',
+      'Vatican City' => 'Vatican City',
+      'Venezuela' => 'Venezuela',
+      'Vietnam' => 'Vietnam',
+      'British Virgin Islands' => 'British Virgin Islands',
+      'US Virgin Islands' => 'US Virgin Islands',
+      'Wallis and Futuna' => 'Wallis and Futuna',
+      'Western Sahara' => 'Western Sahara',
+      'Yemen' => 'Yemen',
+      'Zambia' => 'Zambia',
+      'Zimbabwe' => 'Zimbabwe',
+      'Other' => 'Other',
+  );
+
+  return $countries;
+}
+
+/*
+ * Returns an array of US states
+ */
+function _nt_utilities_get_us_states($key_mode = 'full') {
+  if ($key_mode == 'full') {
+    $states = array(
+        'Alabama' => 'Alabama',
+        'Alaska' => 'Alaska',
+        'Arizona' => 'Arizona',
+        'Arkansas' => 'Arkansas',
+        'California' => 'California',
+        'Colorado' => 'Colorado',
+        'Connecticut' => 'Connecticut',
+        'Delaware' => 'Delaware',
+        'Florida' => 'Florida',
+        'Georgia' => 'Georgia',
+        'Hawaii' => 'Hawaii',
+        'Idaho' => 'Idaho',
+        'Illinois' => 'Illinois',
+        'Indiana' => 'Indiana',
+        'Iowa' => 'Iowa',
+        'Kansas' => 'Kansas',
+        'Kentucky' => 'Kentucky',
+        'Louisiana' => 'Louisiana',
+        'Maine' => 'Maine',
+        'Maryland' => 'Maryland',
+        'Massachusetts' => 'Massachusetts',
+        'Michigan' => 'Michigan',
+        'Minnesota' => 'Minnesota',
+        'Mississippi' => 'Mississippi',
+        'Missouri' => 'Missouri',
+        'Montana' => 'Montana',
+        'Nebraska' => 'Nebraska',
+        'Nevada' => 'Nevada',
+        'New Hampshire' => 'New Hampshire',
+        'New Jersey' => 'New Jersey',
+        'New Mexico' => 'New Mexico',
+        'New York' => 'New York',
+        'North Carolina' => 'North Carolina',
+        'North Dakota' => 'North Dakota',
+        'Ohio' => 'Ohio',
+        'Oklahoma' => 'Oklahoma',
+        'Oregon' => 'Oregon',
+        'Pennsylvania' => 'Pennsylvania',
+        'Rhode Island' => 'Rhode Island',
+        'South Carolina' => 'South Carolina',
+        'South Dakota' => 'South Dakota',
+        'Tennessee' => 'Tennessee',
+        'Texas' => 'Texas',
+        'Utah' => 'Utah',
+        'Vermont' => 'Vermont',
+        'Virginia' => 'Virginia',
+        'Washington' => 'Washington',
+        'West Virginia' => 'West Virginia',
+        'Wisconsin' => 'Wisconsin',
+        'Wyoming' => 'Wyoming',
+    );
+  }elseif($key_mode == 'keys') {
+    $states = array(
+        'AL' => 'Alabama',
+        'AK' => 'Alaska',
+        'AZ' => 'Arizona',
+        'AR' => 'Arkansas',
+        'CA' => 'California',
+        'CO' => 'Colorado',
+        'CT' => 'Connecticut',
+        'DE' => 'Delaware',
+        'FL' => 'Florida',
+        'GA' => 'Georgia',
+        'HI' => 'Hawaii',
+        'ID' => 'Idaho',
+        'IL' => 'Illinois',
+        'IN' => 'Indiana',
+        'IA' => 'Iowa',
+        'KS' => 'Kansas',
+        'KY' => 'Kentucky',
+        'LA' => 'Louisiana',
+        'ME' => 'Maine',
+        'MD' => 'Maryland',
+        'MA' => 'Massachusetts',
+        'MI' => 'Michigan',
+        'MN' => 'Minnesota',
+        'MS' => 'Mississippi',
+        'MO' => 'Missouri',
+        'MT' => 'Montana',
+        'NE' => 'Nebraska',
+        'NV' => 'Nevada',
+        'NH' => 'New Hampshire',
+        'NJ' => 'New Jersey',
+        'NM' => 'New Mexico',
+        'NY' => 'New York',
+        'NC' => 'North Carolina',
+        'ND' => 'North Dakota',
+        'OH' => 'Ohio',
+        'OK' => 'Oklahoma',
+        'OR' => 'Oregon',
+        'PA' => 'Pennsylvania',
+        'RI' => 'Rhode Island',
+        'SC' => 'South Carolina',
+        'SD' => 'South Dakota',
+        'TN' => 'Tennessee',
+        'TX' => 'Texas',
+        'UT' => 'Utah',
+        'VT' => 'Vermont',
+        'VA' => 'Virginia',
+        'WA' => 'Washington',
+        'WV' => 'West Virginia',
+        'WI' => 'Wisconsin',
+        'WY' => 'Wyoming',
+    );
+  }elseif($key_mode = 'abr') {
+    $states = array(
+        'AL' => 'AL',
+        'AK' => 'AK',
+        'AZ' => 'AZ',
+        'AR' => 'AR',
+        'CA' => 'CA',
+        'CO' => 'CO',
+        'CT' => 'CT',
+        'DE' => 'DE',
+        'FL' => 'FL',
+        'GA' => 'GA',
+        'HI' => 'HI',
+        'ID' => 'ID',
+        'IL' => 'IL',
+        'IN' => 'IN',
+        'IA' => 'IA',
+        'KS' => 'KS',
+        'KY' => 'KY',
+        'LA' => 'LA',
+        'ME' => 'ME',
+        'MD' => 'MD',
+        'MA' => 'MA',
+        'MI' => 'MI',
+        'MN' => 'MN',
+        'MS' => 'MS',
+        'MO' => 'MO',
+        'MT' => 'MT',
+        'NE' => 'NE',
+        'NV' => 'NV',
+        'NH' => 'NH',
+        'NJ' => 'NJ',
+        'NM' => 'NM',
+        'NY' => 'NY',
+        'NC' => 'NC',
+        'ND' => 'ND',
+        'OH' => 'OH',
+        'OK' => 'OK',
+        'OR' => 'OR',
+        'PA' => 'PA',
+        'RI' => 'RI',
+        'SC' => 'SC',
+        'SD' => 'SD',
+        'TN' => 'TN',
+        'TX' => 'TX',
+        'UT' => 'UT',
+        'VT' => 'VT',
+        'VA' => 'VA',
+        'WA' => 'WA',
+        'WV' => 'WV',
+        'WI' => 'WI',
+        'WY' => 'WY',
+    );
+  }
+
+  return $states;
+}
+
+/**
+ * This function gets the latitude and longitude for a given address
+ * @param type $address
+ * Format should be in format: 1600 Amphitheatre Parkway, Mountain View, CA
+ * Ideally, separate the city and state with comma to get accurate results
+ * @return array
+ * if not able to get data, the error element in the return array will contain
+ * the error code returned from google maps web service
+ */
+function _nt_utilities_get_geocoding($address) {
+  //turn the spaces in address to + symbol
+  //remove hash symbols as it gives error results
+  //remove & symbol as it confuses the url GET paramters
+  $address = str_replace(" ", "+", $address);
+  $address = str_replace("#", "", $address);
+  $address = str_replace("&", "", $address);
+
+  print 'add: ' . $address . "<br>";
+
+  //get the xml data from google maps api xml method
+  $geo_data = "http://maps.googleapis.com/maps/api/geocode/xml?address=$address&sensor=false";
+
+  //load and parse the data received from web service
+  $data = simplexml_load_file($geo_data);
+
+  $sts = $data->status;
+
+  //status OK indicates success and return of at least one coordinate
+  if ($sts == 'OK') {
+    return array(
+        'error' => NULL,
+        'lat' => $data->result->geometry->location->lat,
+        'lng' => $data->result->geometry->location->lng,
+    );
+  } else {
+    return array(
+        'error' => $sts,
+    );
+  }
+}
+
+/**
+ * This function gets all entries in the location table where
+ * latitude is 0.00000 and updates the geo coordinates using google geo coding api
+ * it adds a sleep of 1 second for each update so that it does not hit the frequency limits
+ * you can set this to 0 if you have less than 500 locations
+ * we have the limit set to 100 so that we can add this function to cron easily
+ */
+function _nt_utilities_update_location_table($limit = 100, $sleep = false) {
+
+  $q = db_query("SELECT * FROM {location} WHERE latitude = '0.000000' LIMIT $limit")->fetchAll();
+  foreach ($q as $r) {
+    //address needs work. 
+    //filter it such that empty elements don't add up
+    $address = $r->additional . ' ' . $r->city . ', ' . $r->province . ' ' . $r->postal_code . ' ' . strtoupper($r->country);
+    $geo = _nt_utilities_get_geocoding($address);
+    if ($geo['error'] == '') {
+      $fields = array('latitude' => $geo['lat'], 'longitude' => $geo['lng']);
+      $update = db_update('location')
+              ->fields($fields)
+              ->condition('lid', $r->lid)
+              ->execute();
+      watchdog('NT Utilities', "Updated location for lid: :lid", array(':lid' => $r->lid), WATCHDOG_INFO);
+    } else {
+      //print $geo['error'] . "<br>";
+      watchdog('NT Utilities', "Error updating location for lid: :lid. [:error]", array(':error' => $geo['error']), WATCHDOG_ALERT);
+    }
+    if ($sleep) {
+      sleep(1);
+    }
+  }
+}
+
+
+/**
+ * This function takes a timestamp and returns it after offsetting
+ * it with the default timezone set in drupal configuration
+ * this is useful when getting the date values directly from database
+ * as the date api perfoms this for fields
+ * if we don't use this function, you will come across situations 
+ * where January 31, 2013, 23:00 in the field is saved in DB as 2013-02-01 
+ * because assumes that offsetting will be applied
+ * @param type $date
+ * @return type
+ */
+function _nt_utilities_tz_offset($timestamp){
+  
+  //lets get the default time zone configured at "admin/config/regional/settings"
+  $default_time_zone = variable_get('date_default_timezone', '');
+  
+  //get datetimezone
+  $tz = new DateTimeZone($default_time_zone);  
+  
+  //offset it 
+  $offset = $tz->getOffset(new DateTime($timestamp));
+  
+  //convert to timestamp
+  $offset_timestamp = strtotime($timestamp) + $offset;
+  
+  return $offset_timestamp;
+}
+
+
+function _nt_utilities_get_role_id($role_name) {
+  $rid = db_query("SELECT rid FROM {role} WHERE name = :role", array(':role' => $role_name))->fetchField();
+  return $rid;
+}
+
+
+
+/**
+ * checks if a url already has ? in it.
+ * if yes, appends variable with & 
+ * otherwise, appends with ?
+ * @param type $label
+ * the label of the parmemter
+ * @param type $var
+ * the actual variable value
+ * @param string $url
+ * the url to which variable needs to be appended to
+ * @return string
+ */
+function nt_utilities_append_to_url($label, $var, $url) {
+  $parsedurl = parse_url($url);
+
+  if ( isset($parsedurl['query']) ) { 
+    $token_append = '&';
+  }
+  else { 
+    $token_append = '?';
+  }
+
+  $appended = $url . $token_append . $label . '=' . $var;
+  return $appended;
+}
+
+
+
+/**
+ * Quick way to print variables
+ * @param type $variable
+ */
+function die_vars($variable) {
+  if (is_debug_url()) {
+    if (is_array($variable)) {
+      print '<pre>';
+      print_r($variable);
+      print '</pre>';
+    }else{
+      print '<br>';
+      print $variable;
+      print '</br>';
+    }
+    die();
+  }
+}
+
+
+
+/**
+ * Check if the current url has the paramger debug = true
+ * this way, we can ensure that debug and die are run only
+ * by development team and not for users
+ * @return boolean
+ */
+function is_debug_url() {
+  if ($_GET['debug']== 'true') {
+    return TRUE;
+  }else{
+    return FALSE;
+  }
+}
+
+
+/**
+ * Gets the term name given a tid
+ * @param string $name
+ */
+function _nt_utilities_get_term_name($tid){
+  $name = db_query("SELECT name FROM {taxonomy_term_data} WHERE tid = :tid", array(':tid' => $tid))->fetchField();
+  if ($name) {
+    return $name;
+  }else{
+    return FALSE;
+  }
+}
+
+
+/**
+ * If given the array of terms, this function gives without links
+ * @param string $names
+ */
+function _nt_utilities_get_plain_terms($terms){
+  foreach($terms as $term) {
+    $tid = $term['tid'];
+    $names[$tid] = _nt_utilities_get_term_name($tid);
+  }
+  return implode(", ", $names);
+}
+

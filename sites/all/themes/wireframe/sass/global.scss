@@ -1,0 +1,205 @@
+/* This file will hold styles for the mobile version of your website (mobile first). */
+/* This also can include ANY global CSS that applies site-wide. Unless overwritten by a more specific style rule, CSS declarations in global.css will apply site-wide. */
+
+@import "compass/css3";
+@import "vars/vars";
+@import "vars/basic_type";
+@import "vars/headings";
+
+
+* {
+    box-sizing: border-box;
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    -ms-box-sizing: border-box;
+}
+
+
+.button {
+	width:100%;
+	display: block;
+	background: #eee;
+	padding: 17px 0;
+	text-align: center;
+	font-size: 14px;
+	text-decoration: none;
+	border: 1px solid #ccc;	
+	margin-bottom:17px;
+}
+.button  h6 {
+	font-size: 11px;
+	margin: 0;
+	text-transform: none;
+	font-style: italic;
+}
+.button  h3, h5 {
+	margin:0;
+	text-transform: uppercase;
+}
+img {
+	max-width:100%;
+	height:auto;	
+}
+.sponsor {
+	width: 100%;
+background: #eee;
+border: 1px solid #ccc;
+}
+.sponsor p {
+	text-align: center;
+	padding: 60px 0;
+	text-transform:uppercase;
+	color:#666;
+}
+.slider-caption {
+	background: #333;
+	position: relative;
+	margin-top: -86px;
+	color: #fff;
+	padding: 10px 20px 15px;
+	opacity: 0.8;
+}
+#section-footer {
+	font-size: 10px;
+}
+#section-footer ul.menu li a{text-decoration:none;}
+#section-footer ul.menu li {
+	list-style:none;
+	
+}
+#section-footer ul.menu li a.sf-depth-1 {text-transform:uppercase;}
+#section-footer ul.menu li.expanded {
+	display: block;
+    margin: 10px 0;
+    padding-right: 0;
+    position: relative;
+    width: 95%;
+}
+#section-footer ul.menu li.expanded ul {
+	margin-left: 0;
+    padding-left: 0;
+}
+#section-footer ul.menu li.expanded ul li {
+	margin-left: 0;
+    padding-left: 0;
+}
+
+h2.block-title{
+	margin-bottom:16px;
+}
+.block-menu-block h2.block-title{
+	margin-bottom:2px;
+}
+
+.front h1 {
+	font-size:24px;	
+}
+ul{
+	margin:0px;
+}
+ul li{
+	list-style:none;
+	margin: 4px 10px;
+}
+
+.front p{
+	margin:0px;
+}
+h1, h2, h3, h4, h5, h6 {
+margin-bottom: 5px;
+}
+.block-superfish li.last a {
+	
+}
+
+.block-block, .block-superfish {
+	margin:10px 0;
+}
+
+#block-block-15 a {
+	line-height:1.5rem;	
+}
+#block-block-15, #block-block-24, #block-block-28 {
+	border: 1px solid #ccc;
+	padding: 20px 20px;
+}
+#block-block-15 input[type=text], #block-block-30 input[type=text]  {
+	width: 100%;
+	height: 30px;
+	border: 1px solid #bbb;
+	margin-bottom: 10px;
+}
+#block-block-15 input[type=submit], #block-block-30 input[type=submit]  {
+	padding: 7px 20px;
+	float: right;
+}
+
+#block-block-15 label {
+	
+}
+
+#block-block-1 img{
+width: 100%;
+display:block;
+height:400px;
+}
+
+
+
+
+#block-block-3, #block-block-5, #block-search-form, #search-block-form{
+	float:right;
+}
+#block-search-form{
+	clear:both;
+}
+
+#block-block-5 {
+	padding:2px;
+}
+#block-block-5 li, #block-block-12 li{
+	width:22px;
+	height:22px;
+	background-color:#666;
+	color:white;
+	margin:5px;
+	text-align:center;
+}
+
+#block-block-11 p{
+	text-align:right;
+}
+#block-block-11, #block-menu-block-2, #block-block-12 {
+	border-top:1px solid #ccc;	
+	margin:0;
+}
+
+div.logo{
+	background: none repeat scroll 0 0 #EEEEEE;
+    border: 1px solid #CCCCCC;
+    font-weight: bold;
+    padding: 20px 0;
+    text-align: center;
+    width: 100%;
+}
+.foot-links {
+	display: block;
+	float: left;
+	width: 145px;
+	margin-bottom: 20px;
+}
+.foot-links.professional-links, .foot-links.support-links {
+	width: 190px;
+}
+
+/*News*/
+.homeNews .summary{
+	margin-bottom:1em;
+}
+
+/*Event*/
+#block-block-6 ul li{
+	list-style:disc;
+	margin-bottom: 16px;
+margin-left: 2em;
+}

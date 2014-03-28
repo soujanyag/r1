@@ -1,0 +1,210 @@
+<?php
+define( 'CRYPT_KEY2', '908q3rjS#*fj3_2JP8RF?JDL=');
+    
+    
+/**
+* Implement hook_help() to display a small help message if somebody clicks the "Help" link on the modules list.
+*/
+function exauth_api_help( $path, $arg ){
+  switch ( $path ) {
+    case 'admin/help#exauth':
+      return( '<p>' . t('This module provides simple API to allow users to login from external DB or Web service.') . '</p>' );
+    break;
+  }
+}
+
+/**
+   * Implement hook_form_alter() to change the behaviour of the login form.
+   *
+   * Login validators are set in the user_login_default_validators() function in user.module.
+   * They are normally set to array('user_login_name_validate',
+   * 'user_login_authenticate_validate', 'user_login_final_validate').
+   * We simply replace 'user_login_authenticate_validate' with 'exauth_login_validate'.
+   */
+function exauth_api_form_user_login_alter( &$form, &$form_state ) {
+  $form['#validate'] = array( 
+    'user_login_name_validate', 
+    'exauth_api_login_validate',
+    'user_login_final_validate' 
+  );
+}
+
+function exauth_api_form_user_login_block_alter( &$form, $form_state ) {
+  return exauth_api_form_user_login_alter( $form, $form_state );
+}
+
+/**
+* Implement hook_user_profile_form_alter() to disable the ability to change email address and
+* password for externally authenticated users.
+*/
+function exauth_api_form_user_profile_form_alter( &$form, $form_state ) {
+  global $user;
+  if ($user->uid == 1) {
+    return TRUE;
+  }
+  
+  $account = user_load(arg(1));
+  if (in_array(EXTERNAL_AUTH_ROLE, $account->roles)) {
+    drupal_set_message('You cannot edit your profile on this site. Please contact the administrator for more help. ');
+    drupal_goto('user');
+  }
+}
+
+/**
+* The exauth_login_validate() function attempts to authenticate a user off the external system
+* using their e-mail address.
+*/
+function exauth_api_login_validate( $form, &$form_state ) {
+  global $user;
+
+  $username = $form_state['values']['name'];
+  $password = $form_state['values']['pass'];
+  // We are validating externally first and then if it returns false, 
+  // we validate against Drupal database
+  if (exauth_api_authenticate_user( $username, $password )) {
+    user_external_login_register( $username, 'exauth_api' );
+    // I wish we didn't have to do this, but I couldn't find any other way to get the
+    // uid at this point
+    $form_state['uid'] = $user->uid;
+  } // else drop through to the end and return nothing - Drupal will handle the rejection
+  else {
+    // Username is not an e-mail address, so use standard Drupal authentication function
+    user_login_authenticate_validate( $form, $form_state );
+  }
+}
+
+/**
+* The exauth_user_insert() function gets called by Drupal AFTER a new user has been added.
+* If the e-mail address has already been set then we don't want to overwrite it, as the user
+* is probably being added manually. Thankfully the only time a user can be added without the
+* e-mail being set is when an external user gets authenticated for the first time, at which
+* point a user is inserted into the database without an e-mail address, which is the case we
+* will deal with in this function.
+*/
+
+
+function exauth_api_user_insert( &$edit, &$account, $category = null ) {
+  // Remember: this function gets called whenever a new user is added, not just when a new
+  // user is being added as a result of them being externally authenticated. So we need to
+  // avoid running the following checks if the user is being added by some other means (eg.
+  // manually by the administrator). In this simple example we're assuming that any user ID
+  // that is an email address is externally authenticated. However, there are possibly
+  // better ways to do this, such as look up the authmaps table and see if there is a row
+  // for this user where module is 'extauth'.
+  $exauth_external_user = isset($_SESSION['exauth_external_user']) ? $_SESSION['exauth_external_user'] : FALSE;
+  
+  if ( $exauth_external_user ) {
+    // This hook is called during the registration process, AFTER the new user has been
+    // added to the users table but BEFORE the roles are written to the users_roles table
+    db_update( 'users' )
+      ->fields( 
+        array( 
+          'mail' => isset($_SESSION['exauth_external_mail']) ? $_SESSION['exauth_external_mail'] : 'noemail@noemail.com',
+          'pass' => user_hash_password($_SESSION['exauth_external_pass']),
+        )
+      )
+      ->condition( 'uid', $account->uid, '=' )
+      ->execute();
+  }
+}
+
+
+/**
+* This is the helper function that you will need to modify in order to invoke your external
+* authentication mechanism.
+*/
+function exauth_api_authenticate_user( $username, $password ) {
+
+  //if email comes empty or false, user is not authenticated
+  $data = exauth_api_custom_authenticate_user($username, $password);
+  if ($data['email']) {
+    $_SESSION['exauth_external_user'] = $username;
+    $_SESSION['exauth_external_pass'] = $password;
+    $_SESSION['exauth_external_mail'] = $data['email'];
+    $_SESSION['exauth_external_role'] = $data['role'];
+    return TRUE;
+  }
+  else{
+    unset($_SESSION['exauth_external_user']);
+    unset($_SESSION['exauth_external_pass']);
+    unset($_SESSION['exauth_external_mail']);
+    unset($_SESSION['exauth_external_role']);
+    return FALSE;
+  }
+}
+
+/*
+ * This function authenticates a users credentials
+ * from the Personify database
+ */
+function exauth_api_custom_authenticate_user($username, $password) {
+  
+	$email = membersuite_validate_user_login($username, $password);
+  
+	if ( $email ){
+		return $email;
+	}else{
+		return FALSE;
+	}
+}
+
+
+/*
+ * Implementation of hook_user_delete()
+ */
+function exauth_api_user_delete($account) {
+  //we are deleting the instance in exauth_users list
+  db_delete('exauth_users')->condition('name', $account->name)->execute();
+  $message = "User deleted from exauth_users after triggering account cancelation: $account->name ($account->uid)";
+  watchdog('Exauth API', $message, array(), WATCHDOG_INFO);
+}
+
+
+function exauth_api_user_login(&$edit, $account){
+  // Remember: this function gets called whenever a new user is added, not just when a new
+  // user is being added as a result of them being externally authenticated. So we need to
+  // avoid running the following checks if the user is being added by some other means (eg.
+  // manually by the administrator). In this simple example we're assuming that any user ID
+  // that is an email address is externally authenticated. However, there are possibly
+  // better ways to do this, such as look up the authmaps table and see if there is a row
+  // for this user where module is 'extauth'.
+  $exauth_external_user = isset($_SESSION['exauth_external_user']) ? $_SESSION['exauth_external_user'] : FALSE;
+  
+  if ( $exauth_external_user ) {
+    //we want to encrypt the password before saving in DB
+    //we are using a reversible encryption method
+    module_load_include('php', 'exauth_api', 'CryptAES');
+    
+    $aes = new CryptAES();
+    $aes->set_key(base64_decode(CRYPT_KEY2));
+    $aes->require_pkcs5();
+    $inup = db_merge('exauth_users')
+            ->key( array('name' => $_SESSION['exauth_external_user']))
+            ->fields(
+      array(
+        'name' => $_SESSION['exauth_external_user'],
+        'pass' => $aes->encrypt($_SESSION['exauth_external_pass']),
+        'mail' => $_SESSION['exauth_external_mail'],
+      )
+    )->execute();
+    
+    //add the roles to this user based on sessionrole
+    if ($_SESSION['exauth_external_role'] != ''){
+      $role_name = membersuite_get_role_id($_SESSION['exauth_external_role']);
+      $role_id = _nt_utilities_get_role_id($role_name);
+      if ($role_id){
+        $account->roles[$role_id] = $_SESSION['exauth_external_role'];
+      }
+    }
+    
+    user_save($account);
+    
+    //its important to unset the session this to avoid other new user registrations
+    //to directly login
+    unset($_SESSION['exauth_external_user']);
+    unset($_SESSION['exauth_external_pass']);
+    unset($_SESSION['exauth_external_mail']);
+    unset($_SESSION['exauth_external_role']);
+  }
+  
+}

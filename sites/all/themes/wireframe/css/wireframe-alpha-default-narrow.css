@@ -1,0 +1,88 @@
+/* This file will hold styles that are loaded using the same media query as the narrow grid. */
+/* If you are using the default media queries provided by Omega, these styles will also
+ *  apply to the normal and widescreen layouts. You may override these styles in the normal 
+ *  and widescreen CSS files as appropriate. */
+/* line 6, ../sass/wireframe-alpha-default-narrow.scss */
+.block-superfish .sf-menu.sf-style-simple a, .sf-menu.sf-style-simple a:visited {
+  font-size: 11px;
+  padding: 1.4em 0.3em;
+}
+
+/* line 12, ../sass/wireframe-alpha-default-narrow.scss */
+.sf-menu.sf-style-simple.sf-horizontal > li:first-child:hover > ul,
+.sf-menu.sf-style-simple.sf-horizontal > li:first-child.sfHover > ul {
+  left: -1px;
+}
+
+/* line 15, ../sass/wireframe-alpha-default-narrow.scss */
+#section-footer ul.menu li.expanded {
+  display: block;
+  float: left;
+  min-height: 200px;
+  position: relative;
+  width: 48%;
+}
+
+/* line 22, ../sass/wireframe-alpha-default-narrow.scss */
+#section-footer ul.menu {
+  margin-left: 0;
+}
+
+/* line 23, ../sass/wireframe-alpha-default-narrow.scss */
+#section-footer ul.menu li.expanded.menu-mlid-520 {
+  height: 253px;
+}
+
+/* ul.menu {
+	margin-left: 10px;
+	margin-bottom: 20px;
+} */
+/* line 29, ../sass/wireframe-alpha-default-narrow.scss */
+#block-block-24 p {
+  display: inline-block;
+  width: 30%;
+}
+
+/* line 33, ../sass/wireframe-alpha-default-narrow.scss */
+.col-3 {
+  width: 26%;
+  float: left;
+  margin: 0 2%;
+  padding: 2%;
+  border: 1px solid #ccc;
+  min-height: 230px;
+}
+
+/* line 41, ../sass/wireframe-alpha-default-narrow.scss */
+.container-12 article .grid-6, .container-12 article .grid-3 {
+  width: 700px;
+}
+
+/* line 45, ../sass/wireframe-alpha-default-narrow.scss */
+.not-front #zone-content aside, .not-front #zone-content #region-content {
+  width: 700px;
+}
+
+/* line 49, ../sass/wireframe-alpha-default-narrow.scss */
+.not-front #zone-content aside .block-menu-block {
+  border-top: 1px solid #ccc;
+  border-bottom: 1px solid #ccc;
+}
+
+/* line 54, ../sass/wireframe-alpha-default-narrow.scss */
+.not-front #zone-content aside .block-menu-block
+.not-front #zone-content aside .block-block {
+  float: left;
+  margin-left: 2%;
+  width: 40.75%;
+}
+
+/* line 59, ../sass/wireframe-alpha-default-narrow.scss */
+.col-3.first {
+  margin-left: 0;
+}
+
+/* line 62, ../sass/wireframe-alpha-default-narrow.scss */
+.col-3.last {
+  margin-right: 0;
+}

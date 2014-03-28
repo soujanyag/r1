@@ -1,0 +1,69 @@
+/* This file will hold styles that are loaded using the same media query as the narrow grid. */
+/* If you are using the default media queries provided by Omega, these styles will also
+ *  apply to the normal and widescreen layouts. You may override these styles in the normal 
+ *  and widescreen CSS files as appropriate. */
+ 
+ .block-superfish .sf-menu.sf-style-simple a, .sf-menu.sf-style-simple a:visited {
+	font-size: 11px;
+    padding: 1.4em 0.3em;
+}
+
+.sf-menu.sf-style-simple.sf-horizontal > li:first-child:hover > ul,
+.sf-menu.sf-style-simple.sf-horizontal > li:first-child.sfHover > ul {
+  left: -1px;
+}
+#section-footer ul.menu li.expanded {
+	display: block;
+    float: left;
+    min-height: 200px;
+    position: relative;
+    width: 48%;
+}
+#section-footer ul.menu {margin-left:0;}
+#section-footer ul.menu li.expanded.menu-mlid-520 {height:253px;}
+div.logo{
+    padding: 20px 33px;
+}
+ul.menu {
+	margin-left: 10px;
+	margin-bottom: 20px;
+}
+#block-block-24 p {
+display:inline-block;	
+width: 30%;
+}
+.col-3 {
+	width: 26%;
+	float: left;
+	margin: 0 2%;
+	padding: 2%;
+	border: 1px solid #ccc;
+	min-height: 230px;
+}
+.container-12 article .grid-6, .container-12 article .grid-3 {
+	width:700px;	
+
+}
+.not-front #zone-content aside, .not-front #zone-content #region-content {
+	width:700px;
+
+}
+.not-front #zone-content aside .block-menu-block {
+		border-top:1px solid #ccc;
+		border-bottom:1px solid #ccc;
+}
+.not-front #zone-content aside .block-menu-block
+.not-front #zone-content aside .block-block {
+	float: left;
+    margin-left: 2%;
+    width: 40.75%;
+}
+.col-3.first {
+	margin-left: 0;
+}
+.col-3.last {
+	margin-right: 0;
+}
+.col-3.middle {
+	
+}

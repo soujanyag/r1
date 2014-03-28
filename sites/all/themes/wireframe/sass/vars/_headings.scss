@@ -1,0 +1,40 @@
+/* COLORS */
+
+
+
+h1, .h1 {
+	color: $light-red;
+	font-size: 36px;
+	font-weight:400;
+}
+
+h2, .h2 {
+	@extend .h1;
+	color: $navy;
+	font-size: 28px;
+}
+
+.resna-block {
+
+	.block-title {
+		font-size: 20px;
+		font-weight: 600;
+		text-transform: uppercase;
+	}
+
+	&.resna-block--default .block-title {
+		color: $navy;
+
+	}
+
+	&.resna-block--secondary .block-title {
+		color:$light-red;
+	}
+
+	&.resna-block--third .block-title {
+		color:$purple;
+	}
+
+}
+
+

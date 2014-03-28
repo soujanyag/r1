@@ -1,0 +1,5 @@
+name = Resna Custom
+description = Custom functions and features
+core = 7.x
+package = Resna Custom
+version = 7.1

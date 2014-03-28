@@ -1,0 +1,61 @@
+<?php
+
+/**
+ * @file
+ * Install, update and uninstall functions for the exauth_api module.
+ */
+
+/**
+ * Implements hook_schema().
+ */
+function exauth_api_schema() {
+  // The table name here is plural, despite Drupal table naming standards,
+  // because "user" is a reserved word in many databases.
+  $schema['exauth_users'] = array(
+    'description' => 'Stores exauth_api users data.',
+    'fields' => array(
+      'name' => array(
+        'type' => 'varchar',
+        'length' => 60,
+        'not null' => TRUE,
+        'default' => '',
+        'description' => 'Unique user name.',
+      ),
+      'pass' => array(
+        'type' => 'varchar',
+        'length' => 128,
+        'not null' => TRUE,
+        'default' => '',
+        'description' => "User's password (hashed).",
+      ),
+      'mail' => array(
+        'type' => 'varchar',
+        'length' => 60,
+        'not null' => TRUE,
+        'default' => '',
+        'description' => 'Unique email.',
+      ),
+    ),
+    'indexes' => array(
+      'mail' => array('mail'),
+    ),
+    'unique keys' => array(
+      'name' => array('name'),
+    ),
+  );
+
+
+  return $schema;
+}
+
+/**
+ * Implements hook_install().
+ */
+function exauth_api_install() {
+}
+
+/**
+ * Implements hook_install().
+ */
+function exauth_api_uninstall() {
+}

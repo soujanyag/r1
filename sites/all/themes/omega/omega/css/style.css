@@ -1,0 +1,11 @@
+.testimonial_meta {
+    float: right !important;
+    text-align: right !important;
+}
+.node-testimonials .field-item {
+    margin-bottom: 0px;
+}
+.color { 
+    color: #C41B4E ;
+    text-decoration: none;
+}

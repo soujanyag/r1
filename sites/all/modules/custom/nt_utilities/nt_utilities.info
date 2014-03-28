@@ -1,0 +1,5 @@
+name = NT Utilities
+description = Custom utility functions and features
+core = 7.x
+package = NT Utilities
+version = 7.1

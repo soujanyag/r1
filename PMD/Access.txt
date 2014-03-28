@@ -1,0 +1,43 @@
+MEMBERSUITE:
+Access Key ID:		AAAAAPIAbsXC+Qs4JZ2oig
+Secret Access:		lEnXJ3MuaR/TpwtJezrPTJm7uq0qiexrLV16mfo/t54PKf0bxTT+RoP+/5iJQAtyOnEUaTHjhEUqX2flIxFJkA==
+AssociationID:		0baafe32-0004-45df-8855-101aedf2a0fe
+SigningID:		AAAAAPMAK8Q/8gs4R26Gag
+PortalURL:		https://resna.ps.membersuite.com
+
+MemberSuite User: 
+user: 			MSPortalUser
+pass: 			MSPortalUser
+
+MemberSuite Console: 
+user: 			resnacms 
+pass: 			resnacms 
+
+Console:		https://console.production.membersuite.com/ 
+Samples:		http://api.docs.membersuite.com/samples/ConciergeAPISamplesCSharp.zip 
+WSDL:			https://api.membersuite.com/mex 
+API doc:		https://s3.amazonaws.com/membersuite-help/api/HTML5/Default.htm#Getting Started/API Overview.htm 
+
+
++++++++++++++++++++++++++++++++++++++++++++
+RESNA DEVELOPMENT 
+SERVER: 		osdev 
+FOLDER: 		/var/www/resna 
+URL:			http://resna.newtarget.net 
+
+DB NAME:		resna_drupal
+
+Drupal Login: 
+ADMIN UN: 		resnadmin 
+ADMIN PW: 		Tr@1lBl@z3
+
+Htaccess Authentication:
+User:			resnauser 
+Pass:			drup@l
++++++++++++++++++++++++++++++++++++++++++
+
+
+http://community.membersuite.com/membersuite/topics/pairing_token_with_signing_certificate?rfm=1
+
+drupalsso
+Tr@1lBl@z3

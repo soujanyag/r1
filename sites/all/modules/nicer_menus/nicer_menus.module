@@ -1,0 +1,929 @@
+<?php
+
+/**
+ * @file
+ * Enables the use of jQuery Superfish plugin for Drupal menus.
+ */
+
+/**
+ * Implements hook_menu().
+ */
+function nicer_menus_menu() {
+  $items['admin/config/user-interface/nicer_menus'] = array(
+    'title' => 'Nicer Menus',
+    'description' => 'Configure Nicer Menus',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('nicer_menus_admin_settings'),
+    'access arguments' => array('administer nicer_menus'),
+    'file' => 'nicer_menus.admin.inc',
+  );
+  return $items;
+}
+
+/**
+ * Implements hook_permission().
+ */
+function nicer_menus_permission() {
+  return array(
+    'administer nicer_menus' => array(
+      'title' => t('Administer Nicer Menus'),
+    ),
+  );
+}
+
+/**
+ * Implements hook_help().
+ */
+function nicer_menus_help($path, $arg) {
+  $output = '';
+  switch ($path) {
+    case 'admin/modules#description':
+      $output .= t('Nicer Menus for your Drupal menus.');
+      break;
+    case 'admin/config/user-interface/nicer_menus':
+      $output .= t('<p>Block-specific Nicer Menus settings could be found at !link</p>', array('!link' => l('admin/structure/block', 'admin/structure/block')));
+      break;
+  }
+  return $output;
+}
+
+/**
+ * Implements hook_block_info().
+ */
+function nicer_menus_block_info() {
+  $blocks = array();
+  $number = variable_get('nicer_menus_number', 4);
+  for ($i = 1; $i <= $number; $i++) {
+    $blocks[$i] = array(
+      'info' => variable_get('nicer_menus_name_' . $i, 'nicer_menus ' . $i) . ' (Nicer Menus)',
+      'cache' => DRUPAL_NO_CACHE,
+    );
+  }
+  return $blocks;
+}
+
+/**
+ * Implements hook_block_configure().
+ */
+function nicer_menus_block_configure($delta = 0) {
+  $form = array();
+  $form['nicer_menus_name_' . $delta] = array(
+    '#type' => 'textfield',
+    '#title' => t('Block description'),
+    '#description' => t('A brief description of your block. Used on the !link', array('!link' => l(t('Blocks administration page'), 'admin/structure/block'))),
+    '#default_value' => variable_get('nicer_menus_name_' . $delta, 'nicer_menus ' . $delta),
+  );
+  $form['nm-menu'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Menu'),
+    '#collapsible' => TRUE,
+    '#collapsed' => FALSE,
+  );
+  $form['nm-menu']['nicer_menus_menu_' . $delta] = array(
+    '#type' => 'select',
+    '#title' => t('Menu parent'),
+    '#description' => t('The menu you want to be displayed using Nicer Menus.') . ' <em>(' . t('Default') . ': &lt;Main menu&gt;)</em>',
+    '#default_value' => variable_get('nicer_menus_menu_' . $delta, 'main-menu:0'),
+    '#options' => menu_parent_options(menu_get_menus(), array('mlid' => 0)),
+  );
+  $form['nm-menu']['nicer_menus_depth_' . $delta] = array(
+    '#type' => 'select',
+    '#title' => t('Menu depth'),
+    '#description' => t('The number of child levels starting with the parent selected above. <strong>-1</strong> means all of them, <strong>0</strong> means none of them.') . ' <em>(' . t('Default') . ': -1)</em>',
+    '#default_value' => variable_get('nicer_menus_depth_' . $delta, -1),
+    '#options' => drupal_map_assoc(range(-1, 50)),
+  );
+  $form['nm-menu']['nicer_menus_expanded_' . $delta] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Take "Expanded" option into effect.'),
+    '#description' => t('By enabling this option, only parent menu items with <em>Expanded</em> option enabled will have their submenus appear.') . ' <em>(' . t('Default') . ': ' . t('disabled') . ')</em>',
+    '#default_value' => variable_get('nicer_menus_expanded_' . $delta, 0),
+  );
+  
+   $form['nm-settings'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Nicer Menus settings'),
+    '#collapsible' => TRUE,
+    '#collapsed' => FALSE,
+  );
+  
+  $form['nm-settings']['nm-more']['nicer_menus_use_link_theme_' . $delta] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Use a theme function for hyperlinks.') . ' <em>(' . t('Default') . ': ' . t('enabled') . ')</em><br /><small>' . t('(Disabling this feature can result in performance improvements, depending on the number of hyperlinks in the menu.)') . '</small>',
+    '#default_value' => variable_get('nicer_menus_use_link_theme_' . $delta, 1),
+  );
+  $form['nm-settings']['nm-more']['nicer_menus_use_item_theme_' . $delta] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Use a theme function for menu items.') . ' <em>(' . t('Default') . ': ' . t('enabled') . ')</em><br /><small>' . t('(Disabling this feature can result in performance improvements, depending on the number of items in the menu.)') . '</small>',
+    '#default_value' => variable_get('nicer_menus_use_item_theme_' . $delta, 1),
+  );
+   $form['nm-settings']['nicer_menus_pathclass_' . $delta] = array(
+    '#type' => 'textfield',
+    '#title' => t('Path class'),
+    '#description' =>  t('The class you have applied to list items that lead to the current page.') . ' <em>(' . t('Default') . ': active-trail)</em><br />' . t('Change this <strong>only</strong> if you are <strong>totally sure</strong> of what you are doing.'),
+    '#default_value' => variable_get('nicer_menus_pathclass_' . $delta, 'active-trail'),
+    '#size' => 15,
+  );
+  
+  
+  $form['nm-advanced-html'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Advanced HTML settings'),
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+  );
+  $form['nm-advanced-html']['nm-hyperlinks'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Hyperlinks'),
+    '#collapsible' => TRUE,
+    '#collapsed' => FALSE,
+  );
+  $form['nm-advanced-html']['nm-hyperlinks']['nicer_menus_hhldescription_' . $delta] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Hide hyperlink descriptions ("title" attribute)') . ' <em>(' . t('Default') . ': ' . t('disabled') . ')</em>',
+    '#description' => t('(Enabling this feature makes the below settings ineffective.)'),
+    '#default_value' => variable_get('nicer_menus_hhldescription_' . $delta, 0),
+  );
+  $form['nm-advanced-html']['nm-hyperlinks']['nm-hyperlinktexts'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Hyperlink texts'),
+    '#collapsible' => TRUE,
+    '#collapsed' => FALSE,
+  );
+  $form['nm-advanced-html']['nm-hyperlinks']['nm-hyperlinktexts']['nicer_menus_hldescription_' . $delta] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Insert hyperlink descriptions ("title" attribute) into hyperlink texts.'),
+    '#default_value' => variable_get('nicer_menus_hldescription_' . $delta, 0),
+  );
+  $form['nm-advanced-html']['nm-hyperlinks']['nm-hyperlinktexts']['nicer_menus_hldmenus_' . $delta] = array(
+    '#type' => 'textfield',
+    '#title' => t('Limit to below menu items'),
+    '#description' => t('Enter menu item ID\'s. Leave empty to include all menus. (Comma separated)') . ' <em>(' . t('Default') . ': ' . t('empty') . ')</em><br />' . t('Example') . ': 5,10,20',
+    '#default_value' => variable_get('nicer_menus_hldmenus_' . $delta, ''),
+    '#size' => 50,
+  );
+  $form['nm-advanced-html']['nm-hyperlinks']['nm-hyperlinktexts']['nicer_menus_hldexclude_' . $delta] = array(
+    '#type' => 'textfield',
+    '#title' => t('Exclude below menu items'),
+    '#description' => t('Enter the ID of the menu items you <strong>do not</strong> want to link descriptions for. (Comma separated)') . ' <em>(' . t('Default') . ': ' . t('empty') . ')</em><br />' . t('Example') . ': 5,10,20',
+    '#default_value' => variable_get('nicer_menus_hldexclude_' . $delta, ''),
+    '#size' => 50,
+  );
+  $form['nm-advanced-html']['nm-html-wrappers'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('HTML wrappers'),
+    '#collapsible' => TRUE,
+    '#collapsed' => FALSE,
+  );
+  $form['nm-advanced-html']['nm-html-wrappers']['nicer_menus_wrapmul_' . $delta] = array(
+    '#type' => 'textfield',
+    '#title' => t('Around the main &lt;UL&gt;'),
+    '#description' => t('Insert extra codes <strong>before</strong> and\or <strong>after</strong> the main UL. (Comma separated).') . ' <em>(' . t('Default') . ': ' . t('empty') . ')</em><br />' . t('Examples') . ': <ul><li>&lt;h3&gt;Discover the universe!&lt;/h3&gt;,</li><li>&lt;h3&gt;Hello there!&lt;/h3&gt;,&lt;div style="clear:both"&gt;&lt;/div&gt;</li><li>,&lt;div style="clear:both"&gt;&lt;/div&gt;</li></ul>',
+    '#default_value' => variable_get('nicer_menus_wrapmul_' . $delta, ''),
+    '#size' => 100,
+    '#maxlength' => 1000,
+  );
+  $form['nm-advanced-html']['nm-html-wrappers']['nicer_menus_wrapul_' . $delta] = array(
+    '#type' => 'textfield',
+    '#title' => t('Around the &lt;UL&gt; content'),
+    '#description' => t('Insert extra codes <strong>before</strong> and\or <strong>after</strong> the ULs. (Comma separated).') . ' <em>(' . t('Default') . ': ' . t('empty') . ')</em><br />' . t('Examples') . ': <ul><li>&lt;h3&gt;Discover the universe!&lt;/h3&gt;,</li><li>&lt;h3&gt;Hello there!&lt;/h3&gt;,&lt;div style="clear:both"&gt;&lt;/div&gt;</li><li>,&lt;div style="clear:both"&gt;&lt;/div&gt;</li></ul>',
+    '#default_value' => variable_get('nicer_menus_wrapul_' . $delta, ''),
+    '#size' => 100,
+    '#maxlength' => 1000,
+  );
+  $form['nm-advanced-html']['nm-html-wrappers']['nicer_menus_wraphl_' . $delta] = array(
+    '#type' => 'textfield',
+    '#title' => t('Around the hyperlinks'),
+    '#description' => t('Insert HTML objects <strong>before</strong> and\or <strong>after</strong> hyperlinks. (Comma separated)') . ' <em>(' . t('Default') . ': ' . t('empty') . ')</em><br />' . t('Examples') . ': <ul><li>&lt;span class="background-left"&gt;&lt;span class="background-right"&gt;,&lt;/span&gt;&lt;/span&gt;</li><li>&lt;img src="example.jpg" width="24" height="24" alt="example" title="example" /&gt;,</li><li>,&lt;span class="custom-arrow"&gt;>&lt;/span&gt;</li></ul>',
+    '#default_value' => variable_get('nicer_menus_wraphl_' . $delta, ''),
+    '#size' => 100,
+    '#maxlength' => 1000,
+  );
+  $form['nm-advanced-html']['nm-html-wrappers']['nicer_menus_wraphlt_' . $delta] = array(
+    '#type' => 'textfield',
+    '#title' => t('Around the hyperlinks content'),
+    '#description' => t('Insert extra codes <strong>before</strong> and\or <strong>after</strong> the text in hyperlinks. (Comma separated)') . ' <em>(' . t('Default') . ': ' . t('empty') . ')</em><br />' . t('Examples') . ': <ul><li>&lt;span class="background-left"&gt;&lt;span class="background-right"&gt;,&lt;/span&gt;&lt;/span&gt;</li><li>&lt;img src="example.jpg" width="24" height="24" alt="example" title="example" /&gt;,</li><li>,&lt;span class="custom-arrow"&gt;>&lt;/span&gt;</li></ul>',
+    '#default_value' => variable_get('nicer_menus_wraphlt_' . $delta, ''),
+    '#size' => 100,
+    '#maxlength' => 1000,
+  );
+  $form['nm-advanced-css'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Advanced CSS settings'),
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+  );
+  $form['nm-advanced-css']['nm-helper-classes'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Helper classes'),
+    '#collapsible' => TRUE,
+    '#collapsed' => FALSE,
+  );
+  $form['nm-advanced-css']['nm-helper-classes']['nicer_menus_firstlast_' . $delta] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Add <strong>first \ middle \ last</strong> classes.'),
+    '#default_value' => variable_get('nicer_menus_firstlast_' . $delta, 1),
+  );
+  $form['nm-advanced-css']['nm-helper-classes']['nicer_menus_zebra_' . $delta] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Add <strong>odd \ even</strong> classes.'),
+    '#default_value' => variable_get('nicer_menus_zebra_' . $delta, 1),
+  );
+  $form['nm-advanced-css']['nm-helper-classes']['nicer_menus_dfirstlast_' . $delta] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Do <strong>not</strong> add <strong>first \ middle \ last</strong> classes to single menu items.'),
+    '#default_value' => variable_get('nicer_menus_dfirstlast_' . $delta, 0),
+  );
+  $form['nm-advanced-css']['nm-helper-classes']['nicer_menus_dzebra_' . $delta] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Do <strong>not</strong> add <strong>odd \ even</strong> classes to single menu items.'),
+    '#default_value' => variable_get('nicer_menus_dzebra_' . $delta, 0),
+  );
+  $form['nm-advanced-css']['nm-helper-classes']['nicer_menus_itemcount_' . $delta] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Add <strong>item count</strong> class to menu items.') . '<em>(nm-item-1, nm-item-2, nm-item-3, ...)</em>',
+    '#default_value' => variable_get('nicer_menus_itemcount_' . $delta, 1),
+  );
+  $form['nm-advanced-css']['nm-helper-classes']['nicer_menus_itemcounter_' . $delta] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Add <strong>children counter</strong> classes to menu items.') . '<em>(nm-total-children-7 nm-parent-children-4 nm-single-children-3, ...)</em>',
+    '#default_value' => variable_get('nicer_menus_itemcounter_' . $delta, 1),
+  );
+  $form['nm-advanced-css']['nm-helper-classes']['nicer_menus_itemdepth_' . $delta] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Add <strong>item depth</strong> class to menu items and their hyperlinks.') . '<em>(nm-depth-1, nm-depth-2, nm-depth-3, ...)</em>',
+    '#default_value' => variable_get('nicer_menus_itemdepth_' . $delta, 1),
+  );
+  $form['nm-advanced-css']['nm-custom-classes'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Custom classes'),
+    '#collapsible' => TRUE,
+    '#collapsed' => FALSE,
+  );
+  $form['nm-advanced-css']['nm-custom-classes']['nicer_menus_ulclass_' . $delta] = array(
+    '#type' => 'textfield',
+    '#title' => t('For the main UL'),
+    '#description' => t('(Space separated, without dots)') . ' <em>(' . t('Default') . ': ' . t('empty') . ')</em><br />' . t('Example') . ': top-menu category-science',
+    '#default_value' => variable_get('nicer_menus_ulclass_' . $delta, ''),
+    '#size' => 50,
+    '#maxlength' => 1000,
+  );
+  $form['nm-advanced-css']['nm-custom-classes']['nicer_menus_liclass_' . $delta] = array(
+    '#type' => 'textfield',
+    '#title' => t('For the list items'),
+    '#description' => t('(Space separated, without dots)') . ' <em>(' . t('Default') . ': ' . t('empty') . ')</em><br />' . t('Example') . ': science-sub',
+    '#default_value' => variable_get('nicer_menus_liclass_' . $delta, ''),
+    '#size' => 50,
+    '#maxlength' => 1000,
+  );
+  $form['nm-advanced-css']['nm-custom-classes']['nicer_menus_hlclass_' . $delta] = array(
+    '#type' => 'textfield',
+    '#title' => t('For the hyperlinks'),
+    '#description' => t('(Space separated, without dots)') . ' <em>(' . t('Default') . ': ' . t('empty') . ')</em><br />' . t('Example') . ': science-link',
+    '#default_value' => variable_get('nicer_menus_hlclass_' . $delta, ''),
+    '#size' => 50,
+    '#maxlength' => 1000,
+  );
+  $form['nm-advanced-css']['nm-extra-css'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Extra CSS'),
+    '#collapsible' => TRUE,
+    '#collapsed' => FALSE,
+  );
+  $form['nm-advanced-css']['nm-extra-css']['nicer_menus_pathcss_' . $delta] = array(
+    '#type' => 'textfield',
+    '#title' => t('Path to CSS file(s)'),
+    '#description' => t('Include extra CSS file(s). (Comma separated)') . ' <em>(' . t('Default') . ': ' . t('empty') . ')</em><br />' . t('Examples') . ': <ul><li>sites/all/files/example.css</li><li>sites/all/files/example.css,sites/all/files/example2.css</li></ul>',
+    '#default_value' => variable_get('nicer_menus_pathcss_' . $delta, ''),
+    '#size' => 100,
+    '#maxlength' => 1000,
+  );
+  return $form;
+}
+
+/**
+ * Implements hook_block_save().
+ */
+function nicer_menus_block_save($delta = 0, $edit = array()) {
+  variable_set('nicer_menus_show_title_' . $delta, $edit['title']);
+  variable_set('nicer_menus_name_' . $delta, $edit['nicer_menus_name_' . $delta]);
+  variable_set('nicer_menus_menu_' . $delta, $edit['nicer_menus_menu_' . $delta]);
+  variable_set('nicer_menus_depth_' . $delta, $edit['nicer_menus_depth_' . $delta]);
+  variable_set('nicer_menus_expanded_' . $delta, $edit['nicer_menus_expanded_' . $delta]);
+  
+  /*NM SETTINGS*/
+  
+  variable_set('nicer_menus_use_link_theme_' . $delta, $edit['nicer_menus_use_link_theme_' . $delta]);
+   variable_set('nicer_menus_use_item_theme_' . $delta, $edit['nicer_menus_use_item_theme_' . $delta]);
+   variable_set('nicer_menus_pathclass_' . $delta, $edit['nicer_menus_pathclass_' . $delta]);
+   
+   
+   /*ADVANCED HTML*/
+   
+  variable_set('nicer_menus_hhldescription_' . $delta, $edit['nicer_menus_hhldescription_' . $delta]);
+  variable_set('nicer_menus_hldescription_' . $delta, $edit['nicer_menus_hldescription_' . $delta]);
+  variable_set('nicer_menus_hldescription_' . $delta, $edit['nicer_menus_hldmenus_' . $delta]);
+  
+  variable_set('nicer_menus_hldescription_' . $delta, $edit['nicer_menus_hldexclude_' . $delta]);
+  
+  
+  
+   variable_set('nicer_menus_wrapmul_' . $delta, $edit['nicer_menus_wrapmul_' . $delta]);
+  variable_set('nicer_menus_wrapul_' . $delta, $edit['nicer_menus_wrapul_' . $delta]);
+  variable_set('nicer_menus_wraphl_' . $delta, $edit['nicer_menus_wraphl_' . $delta]);
+  variable_set('nicer_menus_wraphlt_' . $delta, $edit['nicer_menus_wraphlt_' . $delta]);
+  
+  
+  /*ADVANCED CSS*/
+  variable_set('nicer_menus_firstlast_' . $delta, $edit['nicer_menus_firstlast_' . $delta]);
+   
+   variable_set('nicer_menus_zebra_' . $delta, $edit['nicer_menus_zebra_' . $delta]);
+   variable_set('nicer_menus_dfirstlast_' . $delta, $edit['nicer_menus_dfirstlast_' . $delta]);
+  variable_set('nicer_menus_dzebra_' . $delta, $edit['nicer_menus_dzebra_' . $delta]);
+  variable_set('nicer_menus_itemcount_' . $delta, $edit['nicer_menus_itemcount_' . $delta]);
+  variable_set('nicer_menus_itemcounter_' . $delta, $edit['nicer_menus_itemcounter_' . $delta]);
+  variable_set('nicer_menus_itemdepth_' . $delta, $edit['nicer_menus_itemdepth_' . $delta]);
+  
+ /*CUSTOM CLASSES*/
+ 
+  variable_set('nicer_menus_ulclass_' . $delta, $edit['nicer_menus_ulclass_' . $delta]);
+  variable_set('nicer_menus_liclass_' . $delta, $edit['nicer_menus_liclass_' . $delta]);
+  variable_set('nicer_menus_hlclass_' . $delta, $edit['nicer_menus_hlclass_' . $delta]);
+  variable_set('nicer_menus_pathcss_' . $delta, $edit['nicer_menus_pathcss_' . $delta]);
+  return;
+}
+
+/**
+ * Implements hook_block_contents().
+ */
+function nicer_menus_contents($delta = 0) {
+  global $language;
+  $block_css = $block_js = array();
+
+  list($menu_name, $mlid) = explode(':', variable_get('nicer_menus_menu_' . $delta, 'main-menu:0'));
+
+  $sfsettings = $sfoptions = $sfplugins = array();
+  $sfsettings['show_title'] = variable_get('nicer_menus_show_title_'.$delta, '<none>');
+  $sfsettings['depth'] = variable_get('nicer_menus_depth_' . $delta, '-1');
+  $sfsettings['expanded'] = variable_get('nicer_menus_expanded_' . $delta, 0);
+  $sfsettings['firstlast'] = variable_get('nicer_menus_firstlast_' . $delta, 1);
+  $sfsettings['zebra'] = variable_get('nicer_menus_zebra_' . $delta, 1);
+  $sfsettings['dfirstlast'] = variable_get('nicer_menus_dfirstlast_' . $delta, 0);
+  $sfsettings['dzebra'] = variable_get('nicer_menus_dzebra_' . $delta, 0);
+  $sfsettings['itemcount'] = variable_get('nicer_menus_itemcount_' . $delta, 1);
+  $sfsettings['itemcounter'] = variable_get('nicer_menus_itemcounter_' . $delta, 1);
+  $sfsettings['itemdepth'] = variable_get('nicer_menus_itemdepth' . $delta, 1);
+  $sfsettings['ulclass'] = variable_get('nicer_menus_ulclass_' . $delta, '');
+  $sfsettings['liclass'] = variable_get('nicer_menus_liclass_' . $delta, '');
+  $sfsettings['hlclass'] = variable_get('nicer_menus_hlclass_' . $delta, '');
+  $sfsettings['wrapmul'] = variable_get('nicer_menus_wrapmul_' . $delta, '');
+  $sfsettings['wrapul'] = variable_get('nicer_menus_wrapul_' . $delta, '');
+  $sfsettings['wraphl'] = variable_get('nicer_menus_wraphl_' . $delta, '');
+  $sfsettings['wraphlt'] = variable_get('nicer_menus_wraphlt_' . $delta, '');
+  $sfsettings['use_link_theme'] = variable_get('nicer_menus_use_link_theme_' . $delta, 1);
+  $sfsettings['use_item_theme'] = variable_get('nicer_menus_use_item_theme_' . $delta, 1);
+  $sfsettings['hidelinkdescription'] = variable_get('nicer_menus_hhldescription_' . $delta, 0);
+  $sfsettings['linkdescription'] = variable_get('nicer_menus_hldescription_' . $delta, 0);
+  $sfsettings['hldmenus'] = variable_get('nicer_menus_hldmenus_' . $delta, '');
+  $sfsettings['hldmenus'] = (strpos($sfsettings['hldmenus'], ',')) ? nm_array_remove_empty(explode(',', $sfsettings['hldmenus'])) : $sfsettings['hldmenus'];
+  $sfsettings['hldexclude'] = variable_get('nicer_menus_hldexclude_' . $delta, '');
+  $sfsettings['hldexclude'] = (strpos($sfsettings['hldexclude'], ',')) ? nm_array_remove_empty(explode(',', $sfsettings['hldexclude'])) : $sfsettings['hldexclude'];
+
+  $sfoptions['pathClass'] = variable_get('nicer_menus_pathclass_' . $delta, 'active-trail');  
+
+
+  $vars = array(
+    'id' => $delta,
+    'menu_name' => $menu_name,
+    'mlid' => $mlid,
+    'sfsettings' => $sfsettings
+  );
+  if ($output = theme('nicer_menus', $vars)) {
+    if (!empty($output['content'])) {
+      $output['content'] = array(
+        '#type' => 'markup',
+        '#markup' => filter_xss($output['content'], $allowed_tags = array('a', 'abbr', 'acronym', 'address', 'area', 'article', 'aside', 'audio', 'b', 'base', 'bdi', 'bdo', 'big', 'blockquote', 'br', 'button', 'canvas', 'caption', 'cite', 'code', 'col', 'colgroup', 'command', 'datalist', 'dd', 'del', 'details', 'dfn', 'div', 'dl', 'dt', 'em', 'embed', 'fieldset', 'figcaption', 'figure', 'footer', 'form', 'frame', 'frameset', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'header', 'hgroup', 'hr', 'i', 'iframe', 'img', 'input', 'ins', 'kbd', 'keygen', 'label', 'legend', 'li', 'map', 'mark', 'meter', 'nav', 'noframes', 'noscript', 'object', 'ol', 'optgroup', 'option', 'output', 'p', 'param', 'pre', 'progress', 'q', 'rp', 'rt', 'ruby', 'samp', 'script', 'section', 'select', 'small', 'source', 'span', 'strong', 'sub', 'summary', 'sup', 'table', 'tbody', 'td', 'textarea', 'tfoot', 'th', 'thead', 'time', 'tr', 'track', 'tt', 'ul', 'var', 'video', 'wbr')),
+        '#contextual_links' => array(
+          'nicer_menus' => array('admin/structure/menu/manage', array($menu_name)),
+        )
+      );
+
+      // Creating a title for the <select> title.
+      
+      // Prepare the JavaScript settings.
+      
+      $extracss = variable_get('nicer_menus_pathcss_' . $delta, '');
+      if ($extracss) {
+        if (strpos($extracss, ',')) {
+          $extracss = explode(',', $extracss);
+          foreach ($extracss as $c) {
+            $block_css = array_merge($block_css, array($c => array('type' => 'file', 'weight' => 510)));
+          }
+        }
+        else {
+          $block_css = array_merge($block_css, array($extracss => array('type' => 'file', 'weight' => 510)));
+        }
+      }
+      $output['content']['#attached'] = array(
+        'css' => $block_css,
+      );
+    }
+  }
+  return $output;
+}
+
+/**
+ * Implements hook_block_view().
+ */
+function nicer_menus_block_view($delta = 0) {
+  $block = nicer_menus_contents($delta);
+  return $block;
+}
+
+/**
+ * Implements hook_form_FORM_ID_alter().
+ */
+function nicer_menus_form_block_admin_configure_alter(&$form, $form_state) {
+  $form['#validate'][] = 'nicer_menus_block_validate';
+}
+
+/**
+ * Validation function for the block configuration form.
+ */
+function nicer_menus_block_validate($form, &$form_state) {
+  if ($form_state['values']['module'] == 'nicer_menus') {
+    $supersubs_error = FALSE;
+    $delta = $form_state['values']['delta'];
+    $pathclass = $form_state['values']['nicer_menus_pathclass_' . $delta];
+    $hldmenus = $form_state['values']['nicer_menus_hldmenus_' . $delta];
+    $hldexclude = $form_state['values']['nicer_menus_hldexclude_' . $delta];
+    $extracss = $form_state['values']['nicer_menus_pathcss_' . $delta];
+
+   
+    if (is_numeric($pathclass)) {
+      form_set_error('nicer_menus_pathclass_' . $delta, t('<strong>Path class</strong>: unacceptable value entered.'));
+    }
+    
+    if (!empty($hldmenus) && (!is_numeric(str_replace(',', '', $hldmenus)) || strpos($hldmenus, ' .'))) {
+      form_set_error('nicer_menus_hldmenus_' . $delta, t('<strong>Hyperlinks</strong>: unacceptable value entered.'));
+    }
+    if (!empty($hldexclude) && (!is_numeric(str_replace(',', '', $hldexclude)) || strpos($hldexclude, ' .'))) {
+      form_set_error('nicer_menus_hldexclude_' . $delta, t('<strong>Hyperlinks</strong>: unacceptable value entered.'));
+    }
+    if (!empty($extracss)) {
+      if (strpos($extracss, ',')) {
+        $error = array();
+        $extracss = nm_array_remove_empty(explode(',', $extracss));
+        foreach ($extracss as $c) {
+          if (!file_exists($c)) {
+            $error[] = $c;
+          }
+        }
+        if (!empty($error)) {
+          form_set_error('nicer_menus_pathcss_' . $delta, t('Cannot find the CSS file mentioned in <strong>Extra CSS</strong>'));
+        }
+      }
+      elseif (!file_exists($extracss)) {
+        form_set_error('nicer_menus_pathcss_' . $delta, t('Cannot find the CSS file mentioned in <strong>Extra CSS</strong>'));
+      }
+    }
+  }
+}
+
+
+
+
+/**
+ * Helper function to clean up arrays.
+ */
+function nm_array_remove_empty($haystack) {
+  foreach ($haystack as $key => $value) {
+    if (is_array($value)) {
+      $haystack[$key] = nm_array_remove_empty($haystack[$key]);
+    }
+    elseif (empty($value) && is_bool($value) !== TRUE) {
+      if ($haystack[$key] != '0') {
+        unset($haystack[$key]);
+      }
+    }
+  }
+  return $haystack;
+}
+
+/**
+ * Implements hook_theme().
+ */
+function nicer_menus_theme() {
+  return array(
+    'nicer_menus' => array(
+      'variables' => array(
+        'id' => NULL,
+        'menu_name' => NULL,
+        'mlid' => NULL,
+        'sfsettings' => NULL
+      ),
+    ),
+    'nicer_menus_build' => array(
+      'variables' => array(
+        'id' => NULL,
+        'menu' => NULL,
+        'depth' => -1,
+        'trail' => NULL,
+        'sfsettings' => NULL
+      ),
+    ),
+    'nicer_menus_menu_item' => array(
+      'variables' => array(
+        'element' => NULL,
+        'properties' => NULL,
+      ),
+    ),
+    'nicer_menus_menu_item_link' => array(
+      'variables' => array(
+        'menu_item' => NULL,
+        'link_options' => NULL,
+      ),
+    ),
+  );
+}
+
+/**
+ * Builds the active trail from the page's menu data.
+ */
+function nicer_menus_build_page_trail($page_menu) {
+  $trail = array();
+  foreach ($page_menu as $item) {
+    if ($item['link']['in_active_trail'] || ($item['link']['href'] == '<front>' && drupal_is_front_page())) {
+      $trail[] = $item['link']['mlid'];
+    }
+    if ($item['below']) {
+      $trail = array_merge($trail, nicer_menus_build_page_trail($item['below']));
+    }
+  }
+  return $trail;
+}
+
+/**
+ * Theme function to allow any menu tree to be themed as a Nicer Menus menu.
+ */
+function theme_nicer_menus($variables) {
+  global $user, $language;
+
+  $id = $variables['id'];
+  $menu_name = $variables['menu_name'];
+  $mlid = $variables['mlid'];
+  $sfsettings = $variables['sfsettings'];
+
+  $menu = menu_tree_all_data($menu_name);
+
+  if (function_exists('i18n_menu_localize_tree')) {
+    $menu = i18n_menu_localize_tree($menu);
+  }
+
+  // For custom $menus and menus built all the way from the top-level we
+  // don't need to "create" the specific sub-menu and we need to get the title
+  // from the $menu_name since there is no "parent item" array.
+  // Create the specific menu if we have a mlid.
+  if (!empty($mlid)) {
+    // Load the parent menu item.
+    $item = menu_link_load($mlid);
+    $title = check_plain($item['title']);
+    $parent_depth = $item['depth'];
+    // Narrow down the full menu to the specific sub-tree we need.
+    for ($p = 1; $p < 10; $p++) {
+      if ($sub_mlid = $item["p$p"]) {
+        $subitem = menu_link_load($sub_mlid);
+        $key = (50000 + $subitem['weight']) . ' ' . $subitem['title'] . ' ' . $subitem['mlid'];
+        $menu = (isset($menu[$key]['below'])) ? $menu[$key]['below'] : $menu;
+      }
+    }
+  }
+  else {
+    $result = db_query("SELECT title FROM {menu_custom} WHERE menu_name = :a", array(':a' => $menu_name))->fetchField();
+    $title = check_plain($result);
+  }
+
+  $output['content'] = '';
+  if($sfsettings['show_title'] !== '<none>'){
+		  
+	  $output['subject'] = $title;
+  };
+  
+  if ($menu) {
+    // Set the total menu depth counting from this parent if we need it.
+    $depth = $sfsettings['depth'];
+    $depth = ($sfsettings['depth'] > 0 && isset($parent_depth)) ? $parent_depth + $depth : $depth;
+
+    $var = array(
+      'id' => $id,
+      'menu' => $menu,
+      'depth' => $depth,
+      'trail' => nicer_menus_build_page_trail(menu_tree_page_data($menu_name)),
+      'sfsettings' => $sfsettings
+    );
+    if ($menu_tree = theme('nicer_menus_build', $var)) {
+      if ($menu_tree['content']) {
+        // Add custom HTML codes around the main menu.
+        if ($sfsettings['wrapmul'] && strpos($sfsettings['wrapmul'], ',') !== FALSE) {
+          $wmul = explode(',', $sfsettings['wrapmul']);
+          // In case you just wanted to add something after the element.
+          if (drupal_substr($sfsettings['wrapmul'], 0) == ',') {
+            array_unshift($wmul, '');
+          }
+        }
+        else {
+          $wmul = array();
+        }
+        $output['content'] = isset($wmul[0]) ? $wmul[0] : '';
+        $output['content'] .= '<ul id="nicer_menus-' . $id . '"';
+        $output['content'] .= ' class="menu nm-menu nm-' . $menu_name;
+        $output['content'] .= ($sfsettings['itemcounter']) ? ' nm-total-items-' . $menu_tree['total_children'] : '';
+        $output['content'] .= ($sfsettings['itemcounter']) ? ' nm-parent-items-' . $menu_tree['parent_children'] : '';
+        $output['content'] .= ($sfsettings['itemcounter']) ? ' nm-single-items-' . $menu_tree['single_children'] : '';
+        $output['content'] .= ($sfsettings['ulclass']) ? ' ' . $sfsettings['ulclass'] : '';
+        $output['content'] .= ($language->direction == 1) ? ' rtl' : '';
+        $output['content'] .= '">' . $menu_tree['content'] . '</ul>';
+        $output['content'] .= isset($wmul[1]) ? $wmul[1] : '';
+      }
+    }
+  }
+  return $output;
+}
+
+/**
+ * Helper function that builds the nested lists of a Superfish menu.
+ */
+function theme_nicer_menus_build($variables) {
+  $output = array('content' => '');
+  $id = $variables['id'];
+  $menu = $variables['menu'];
+  $depth = $variables['depth'];
+  $trail = $variables['trail'];
+  // Keep $sfsettings untouched as we need to pass it to the child menus.
+  $settings = $sfsettings = $variables['sfsettings'];
+  $total_children = $parent_children = $single_children = 0;
+  $i = 1;
+
+  // Reckon the total number of available menu items.
+  foreach ($menu as $menu_item) {
+    if (!isset($menu_item['link']['hidden']) || $menu_item['link']['hidden'] == 0) {
+      $total_children++;
+    }
+  }
+
+  foreach ($menu as $menu_item) {
+
+    $show_children = $megamenu_wrapper = $megamenu_column = $megamenu_content = FALSE;
+    $item_class = $link_options = $link_class = array();
+    $mlid = $menu_item['link']['mlid'];
+
+    if (!isset($menu_item['link']['hidden']) || $menu_item['link']['hidden'] == 0) {
+      $item_class[] = ($trail && in_array($mlid, $trail)) ? 'active-trail' : '';
+
+      // Add helper classes to the menu items and hyperlinks.
+      $settings['firstlast'] = ($settings['dfirstlast'] == 1 && $total_children == 1) ? 0 : $settings['firstlast'];
+      $item_class[] = ($settings['firstlast'] == 1) ? (($i == 1 && $i == $total_children) ? 'firstandlast' : (($i == 1) ? 'first' : (($i == $total_children) ? 'last' : 'middle'))) : '';
+      $settings['zebra'] = ($settings['dzebra'] == 1 && $total_children == 1) ? 0 : $settings['zebra'];
+      $item_class[] = ($settings['zebra'] == 1) ? (($i % 2) ? 'odd' : 'even') : '';
+      $item_class[] = ($settings['itemcount'] == 1) ? 'nm-item-' . $i : '';
+      $item_class[] = ($settings['itemdepth'] == 1) ? 'nm-depth-' . $menu_item['link']['depth'] : '';
+      $link_class[] = ($settings['itemdepth'] == 1) ? 'nm-depth-' . $menu_item['link']['depth'] : '';
+      $item_class[] = ($settings['liclass']) ? $settings['liclass'] : '';
+      if (strpos($settings['hlclass'], ' ')) {
+        $l = explode(' ', $settings['hlclass']);
+        foreach ($l as $c) {
+          $link_class[] = $c;
+        }
+      }
+      else {
+        $link_class[] = $settings['hlclass'];
+      }
+      $i++;
+
+      // Hide hyperlink descriptions ("title" attribute).
+      if ($settings['hidelinkdescription'] == 1) {
+        unset($menu_item['link']['localized_options']['attributes']['title']);
+      }
+
+      // Insert hyperlink description ("title" attribute) into the text.
+      $show_linkdescription = ($settings['linkdescription'] == 1 && !empty($menu_item['link']['localized_options']['attributes']['title'])) ? TRUE : FALSE;
+      if ($show_linkdescription) {
+        if (!empty($settings['hldmenus'])) {
+          $show_linkdescription = (is_array($settings['hldmenus'])) ? ((in_array($mlid, $settings['hldmenus'])) ? TRUE : FALSE) : (($mlid == $settings['hldmenus']) ? TRUE : FALSE);
+        }
+        if (!empty($settings['hldexclude'])) {
+          $show_linkdescription = (is_array($settings['hldexclude'])) ? ((in_array($mlid, $settings['hldexclude'])) ? FALSE : $show_linkdescription) : (($settings['hldexclude'] == $mlid) ? FALSE : $show_linkdescription);
+        }
+        if ($show_linkdescription) {
+          $menu_item['link']['title'] .= ' <span class="nm-description">';
+          $menu_item['link']['title'] .= (!empty($menu_item['link']['localized_options']['attributes']['title'])) ? $menu_item['link']['localized_options']['attributes']['title'] : array();
+          $menu_item['link']['title'] .= '</span>';
+          $link_options['html'] = TRUE;
+        }
+      }
+
+      // Add custom HTML codes around the menu items.
+      if ($sfsettings['wrapul'] && strpos($sfsettings['wrapul'], ',') !== FALSE) {
+        $wul = explode(',', $sfsettings['wrapul']);
+        // In case you just wanted to add something after the element.
+        if (drupal_substr($sfsettings['wrapul'], 0) == ',') {
+          array_unshift($wul, '');
+        }
+      }
+      else {
+        $wul = array();
+      }
+
+      // Add custom HTML codes around the hyperlinks.
+      if ($settings['wraphl'] && strpos($settings['wraphl'], ',') !== FALSE) {
+        $whl = explode(',', $settings['wraphl']);
+        // The same as above
+        if (drupal_substr($settings['wraphl'], 0) == ',') {
+          array_unshift($whl, '');
+        }
+      }
+      else {
+        $whl = array();
+      }
+
+      // Add custom HTML codes around the hyperlinks text.
+      if ($settings['wraphlt'] && strpos($settings['wraphlt'], ',') !== FALSE) {
+        $whlt = explode(',', $settings['wraphlt']);
+        // The same as above
+        if (drupal_substr($settings['wraphlt'], 0) == ',') {
+          array_unshift($whlt, '');
+        }
+        $menu_item['link']['title'] = $whlt[0] . check_plain($menu_item['link']['title']) . $whlt[1];
+        $link_options['html'] = TRUE;
+      }
+
+      $expanded = ($sfsettings['expanded'] == 1) ? (($menu_item['link']['expanded'] == 1) ? TRUE : FALSE) : TRUE;
+
+      if (!empty($menu_item['link']['has_children']) && !empty($menu_item['below']) && $depth != 0 && $expanded === TRUE) {
+
+        // Render the sub-menu.
+        $var = array(
+          'id' => $id,
+          'menu' => $menu_item['below'],
+          'depth' => $depth,
+          'trail' => $trail,
+          'sfsettings' => $sfsettings
+        );
+        $children = theme('nicer_menus_build', $var);
+        // Check to see whether it should be displayed.
+        $show_children = (($menu_item['link']['depth'] <= $depth || $depth == -1) && $children['content']) ? TRUE : FALSE;
+        if ($show_children) {
+          // Add item counter classes.
+          if ($settings['itemcounter']) {
+            $item_class[] = 'nm-total-children-' . $children['total_children'];
+            $item_class[] = 'nm-parent-children-' . $children['parent_children'];
+            $item_class[] = 'nm-single-children-' . $children['single_children'];
+          }
+          // More helper classes.
+          $item_class[] = $link_class[] = 'menuparent';
+        }
+        $parent_children++;
+      }
+      else {
+        $item_class[] = 'nm-no-children';
+        $single_children++;
+      }
+
+      $item_class = implode(' ', nm_array_remove_empty($item_class));
+
+      if (isset($menu_item['link']['localized_options']['attributes']['class'])) {
+        $link_class_current = $menu_item['link']['localized_options']['attributes']['class'];
+        $link_class = array_merge($link_class_current, nm_array_remove_empty($link_class));
+      }
+      $menu_item['link']['localized_options']['attributes']['class'] = nm_array_remove_empty($link_class);
+
+      // The Context module uses theme_menu_link, nicer_menus does not, this is why we have to do this.
+      if (function_exists('context_active_contexts')) {
+        if ($contexts = context_active_contexts()) {
+          foreach ($contexts as $context) {
+            if ((isset($context->reactions['menu']))) {
+              if ($menu_item['link']['href'] == $context->reactions['menu']) {
+                $menu_item['link']['localized_options']['attributes']['class'][] = 'active';
+              }
+            }
+          }
+        }
+      }
+
+      $link_options += $menu_item['link']['localized_options'];
+
+      // Render the menu item.
+      // Should a theme be used for menu items?
+      if ($settings['use_item_theme']) {
+        $item_variables = array(
+          'element' => array(
+            'attributes' => array(
+              'id' => 'menu-' . $mlid . '-' . $id,
+              'class' => trim($item_class),
+            ),
+            'below' => ($show_children) ? $children['content'] : NULL,
+            'item' => $menu_item,
+            'localized_options' => $link_options,
+          ),
+          'properties' => array(
+            'megamenu' => array(
+              'megamenu_column' => $megamenu_column,
+              'megamenu_wrapper' => $megamenu_wrapper,
+              'megamenu_content' => $megamenu_content,
+            ),
+            'use_link_theme' => $settings['use_link_theme'],
+            'wrapper' => array(
+			  'wul' => $wul,
+              'whl' => $whl,)
+          ),
+        );
+        $output['content'] .= theme('nicer_menus_menu_item', $item_variables);
+      }
+      else {
+        $output['content'] .= '<li id="menu-' . $mlid . '-' . $id . '"';
+        $output['content'] .= ($item_class) ? ' class="' . trim($item_class) . '">' : '>';krumo($whl);
+        $output['content'] .= isset($whl[0]) ? $whl[0] : '';
+        if ($settings['use_link_theme']) {
+          $link_variables = array(
+            'menu_item' => $menu_item,
+            'link_options' => $link_options,
+          );
+          $output['content'] .= theme('nicer_menus_menu_item_link', $link_variables);
+        }
+        else {
+          $output['content'] .= l($menu_item['link']['title'], $menu_item['link']['href'], $link_options);
+        }
+        $output['content'] .= isset($whl[1]) ? $whl[1] : '';
+        $output['content'] .= ($megamenu_wrapper) ? '<ul class="sf-megamenu"><li class="sf-megamenu-wrapper ' . $item_class . '">' : '';
+        $output['content'] .= ($show_children) ? (($megamenu_content) ? '<ol>' : '<ul>') : '';
+        $output['content'] .= ($show_children) ? (isset($wul[0]) ? $wul[0] : '') : '';
+        $output['content'] .= ($show_children) ? $children['content'] : '';
+        $output['content'] .= ($show_children) ? (isset($wul[1]) ? $wul[1] : '') : '';
+        $output['content'] .= ($show_children) ? (($megamenu_content) ? '</ol>' : '</ul>') : '';
+        $output['content'] .= ($megamenu_wrapper) ? '</li></ul>' : '';
+        $output['content'] .= ($megamenu_column) ? '</div>' : '';
+        $output['content'] .= '</li>';
+      }
+    }
+  }
+  $output['total_children'] = $total_children;
+  $output['parent_children'] = $parent_children;
+  $output['single_children'] = $single_children;
+  return $output;
+}
+/**
+ * Returns HTML for a menu item.
+ *
+ * @param $variables
+ *   An associative array containing:
+ *   - element: Structured array data for a menu item.
+ *   - properties: Various properties of a menu item.
+ *
+ * @ingroup themeable
+ */
+function theme_nicer_menus_menu_item($variables) {
+  $element = $variables['element'];
+  $properties = $variables['properties'];
+  $sub_menu = '';
+
+  if ($element['below']) {krumo($properties['wrapper']);
+    $sub_menu .= isset($properties['wrapper']['wul'][0]) ? $properties['wrapper']['wul'][0] : '';
+    $sub_menu .= '<ul>';
+    $sub_menu .= $element['below'];
+    $sub_menu .=  '</ul>';
+    $sub_menu .= isset($properties['wrapper'][1]) ? $properties['wrapper'][1] : '';
+  }
+
+  $output = '<li' . drupal_attributes($element['attributes']) . '>';
+  $output .= isset($properties['wrapper']['whl'][0]) ? $properties['wrapper']['whl'][0] : '';
+  if ($properties['use_link_theme']) {
+    $link_variables = array(
+      'menu_item' => $element['item'],
+      'link_options' => $element['localized_options']
+    );
+    $output .= theme('nicer_menus_menu_item_link', $link_variables);
+  }
+  else {
+    $output .= l($element['item']['link']['title'], $element['item']['link']['href'], $element['localized_options']);
+  }
+  $output .= isset($properties['wrapper']['whl'][1]) ? $properties['wrapper']['whl'][1] : '';
+  $output .= $sub_menu;
+  $output .= '</li>';
+
+  return $output;
+}
+/**
+ * Theme a menu item link.
+ *
+ * @param $variables
+ *   An array of variables containing:
+ *    - menu_item: The menu item array.
+ *    - link_options: An array of link options.
+ *
+ * @ingroup themeable
+ */
+function theme_nicer_menus_menu_item_link($variables) {
+  $menu_item = $variables['menu_item'];
+  $link_options = $variables['link_options'];
+  return l($menu_item['link']['title'], $menu_item['link']['href'], $link_options);
+}

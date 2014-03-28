@@ -1,0 +1,41 @@
+Global redirect for non-www requests to www
+Add Old URL field to all content types
+Add Google Analytics tracking code
+SEO-friendly URLs, meta description, and keywords for all node types - insta metatags quick module
+301 redirects from old urls to new ones
+a short URL could be created for an email blast
+match Member & Certified Member role from MSuite
+Create private file system and content type
+Discuss product based roles with Patrick
+Show taxonomy tree in minimised format
+Enable News category facets in search
+Map news categories while migrating content (feasiblity)
+Develop related standards based on Standards - Keywords tax
+Use Standards tax level 1 in faceted search
+Use Event Category in facet search
+Create filter by event category on events
+use Continuing Education Category facet
+Create 5 separate blokcs for each type of testimonial category for those sections
+Instal metatags quick module and configure
+Enable caching for views for 5 mins
+Configure each section field as  Workbench Access control field
+Move Section as the 1st field in list
+Theme menu block instead of nicer menus
+Correct the section for all menu items present right now for correct URLs
+What is the landing page for conferences (patrick) ?
+What should Annual Meeting page show - is it static (patrick)
+Display Program, Registration, Venu and 3 blocks on Conference pages
+What does "Conference News [taxonomy pick list]" refer to (patrick) - which taxonomy?
+Make program, workshops, registration, venue, CfP, Webcast as autocomplete instead of select
+Use panels for Conference Landing page - check which other content types require panel landing. Add more links to all blocks
+Make Conference URLs as /events/annual-conference/title
+Match it with the wireframe at http://resna.newtarget.net/annual-meeting_wireframe
+Add body text to slideshow
+Exclude Slideshow from solr SEARCH
+Create a Glossary Content type and create its view with alphabetical filter. See Arts for example. Link this in Knowledge Center
+FAQs 3 category blocks and 1 dynamic section based filter block
+Discuss with patrick how FAQs should be dealt. May be tagging is a better and consistent option.
+Link Shop and Contact in utility bar
+MemberSuite query shopping cart items and display in Utility Bar
+Add Social links to footer and add logo at bottom
+Link Contact Us links to the webform

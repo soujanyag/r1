@@ -1,0 +1,203 @@
+<?php
+
+/**
+ * Main file for MemberSuite Integration
+ */
+
+function membersuite_init(){
+  //membersuite_set_sso();
+}
+
+/**
+ * Implementation of hook_menu()
+ * @return array
+ */
+function membersuite_menu() {
+
+  //this provides a custom login redirection
+  $items['admin/config/membersuite'] = array(
+    'title' => 'MemberSuite Settings',
+    'description' => 'MemberSuite Settings',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => 'membersuite_admin_settings',
+    'access arguments' => array('administer site configuration'),
+    'type' => MENU_CALLBACK,
+  );
+
+  return $items;
+}
+
+function membersuite_admin_settings($form, &$form_state) {
+  $form = array();
+  $form['membersuite_secret_key'] = array(
+    '#type' => 'textfield',
+    '#title' => t('MemberSuite Secret Key'),
+    '#default_value' => variable_get('membersuite_secret_key', NULL),
+    '#description' => t('MemberSuite Secret Key.'),
+  );
+  
+  $form['membersuite_association_id'] = array(
+    '#type' => 'textfield',
+    '#title' => t('MemberSuite Association ID'),
+    '#default_value' => variable_get('membersuite_association_id', NULL),
+    '#description' => t('MemberSuite Association ID.'),
+  );
+  
+  $form['membersuite_wsdl_url'] = array(
+    '#type' => 'textfield',
+    '#title' => t('MemberSuite URL'),
+    '#default_value' => variable_get('membersuite_wsdl_url', 'http://membersuite.com/contracts/IConciergeAPIService/'),
+    '#description' => t('MemberSuite Association ID.'),
+  );
+  
+  $form['membersuite_signature_id'] = array(
+    '#type' => 'textfield',
+    '#title' => t('MemberSuite Signature ID'),
+    '#default_value' => variable_get('membersuite_signature_id', NULL),
+    '#description' => t('MemberSuite Signature ID.'),
+  );
+  
+  return system_settings_form($form);
+}
+
+
+function membersuite_validate_user_login($username, $password){
+  require_once('class/src/MemberSuite.php');
+  require_once('config/config.php');
+  $api = new MemberSuite();
+  $api->accesskeyId = Userconfig::read('AccessKeyId');
+  $api->associationId = Userconfig::read('AssociationId');
+  $api->secretaccessId = Userconfig::read('SecretAccessKey');
+  $check = $api->WhoAmI();
+  if ($check->aSuccess == 'false') {
+    $error = $check->aErrors->bConciergeError->bMessage;
+    watchdog('membersuite', "Could not connect to MemberSuite." . $error, array(), WATCHDOG_ALERT);
+    return FALSE;
+  }
+  
+  // Varify username and password
+  $response = $api->LoginToPortal($username, $password);
+
+  if ($response->aSuccess == 'false') {
+    $error = $response->aErrors->bConciergeError->bMessage;
+    watchdog('membersuite', "Could not login user." . $error, array(), WATCHDOG_ALERT);
+    return FALSE;
+  }
+  
+  $getresult = new GetSafeValue($response->aResultValue->aPortalEntity);
+  $entityId = $getresult->ID;
+  
+  $Query = "select TOP 1 EmailAddress, Type_ID, FirstName, LocalID, LastName,
+    Membership.Type.Name,Membership.ReceivesMemberBenefits from Individual where ID = '" . $entityId . "' order by LastName";
+  
+  $Startrecord = "0";
+  $Maxrecord = "1";
+
+  $data = $api->ExecuteMSQL($Query, $Startrecord, $Maxrecord);
+  $result = $data->aResultValue->aSearchResult->aTable->diffgrdiffgram->NewDataSet;
+  if ($result->Table) {
+    foreach($result->Table as $key => $value){
+      if ($key == 'Membership.Type.Name'){
+        $membership_type = $value;
+      }
+      if ($key == 'Membership.ReceivesMemberBenefits') {
+        $member_benefits = TRUE;
+      }
+      if ($key == 'EmailAddress'){
+        $email = $value;
+      }
+    }
+    
+    $user['role'] = $membership_type;
+    $user['benefits'] = $member_benefits;
+    $user['email'] = $email;
+    return $user;
+  } else {
+    $error = "Search failed";
+    watchdog('membersuite', "Could not get user data." . $error, array(), WATCHDOG_ALERT);
+    return FALSE;
+  }
+  
+}
+
+function membersuite_get_role_id($membership_type){
+  switch($membership_type){
+    case 'Student':
+      return 'Student';
+      break;
+    case 'Consumer':
+      return 'Member';
+      break;
+    case 'Certified':
+      return 'Certified Member';
+      break;
+  }
+}
+
+function membersuite_user_login(&$edit, $account){
+  //lets set the sso process here
+}
+
+function membersuite_set_sso(){
+  require_once('class/app_code/ConciergeApiHelper.php');
+  require_once('config/config.php');
+
+  $api = new ApiHelper();
+        
+  $call = 'http://membersuite.com/contracts/IConciergeAPIService/';
+
+  $api->PortalUserName = 'test';
+  $api->AccesskeyId = Userconfig::read('AccessKeyId');
+  $api->AssociationId = Userconfig::read('AssociationId');
+  $api->SecretAccessKey = Userconfig::read('SecretAccessKey');
+  $api->SigningCertificateId = Userconfig::read('SigningcertificateId');
+
+  // Get Private XML Content
+  $sig_path = Userconfig::read('SigningcertificatePath');
+  if (file_exists($sig_path)) {
+    $value = file_get_contents($sig_path);
+    $rsaXML = mb_convert_encoding($value, 'UTF-8', 'UTF-16LE');
+  } else {
+    
+    die('signing certificate file does not exist: ' . $sig_path);
+  }
+
+  // Generate Digital Signature
+  $api->DigitalSignature = $api->DigitalSignature($rsaXML);
+
+  // Generate Message Signature
+  $api->MessageSignature = $api->MessageSignature($method = 'CreatePortalSecurityToken');
+
+  // Get Token XML Content
+  $xmlPath = Userconfig::read('PortalXMLPath');
+  if (file_exists($xmlPath)) {
+    $filecontent = file_get_contents($xmlPath);
+  } else {
+    die('token request cannot be generated');
+  }
+
+  // Create Security Token For Login
+  $response = $api->CreatePortalSecurityToken($filecontent);
+  $xml = new DOMDocument();
+
+  $xml->loadXML($response);
+  $sessionId = $xml->getElementsByTagName('SessionId')->item(0)->nodeValue;
+  $success = $xml->getElementsByTagName('Success')->item(0)->nodeValue;
+  $securityToken = $xml->getElementsByTagName('ResultValue')->item(0)->nodeValue;
+  
+  if ($success == 'false') {
+    die('error from ms: ' . $xml->getElementsByTagName('Message')->item(0)->nodeValue);
+  }
+  
+  
+  
+  print '<form name="LoginForm" method="post" id="LoginForm" action="'. Userconfig::read('PortalUrl').'Login.aspx">
+    <input type="hidden" name="Token" id="Token" value="'.$securityToken.'" />
+    <input type="hidden" name="ReturnUrl" id="ReturnUrl" value="default.aspx" />
+    <input type="hidden" name="NextUrl" id="NextUrl" value="http://localhost/resna/user" />
+</form>
+<script>
+    document.LoginForm.submit();
+</script>';
+exit;
+}

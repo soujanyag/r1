@@ -1,0 +1,35 @@
+/* This file will hold styles that are loaded using the same media query as the wide grid. */
+/* line 3, ../sass/wireframe-alpha-default-wide.scss */
+.block-superfish .sf-menu.sf-style-simple a, .sf-menu.sf-style-simple a:visited {
+  font-size: 14px;
+  padding: 1.4em 1.35em;
+}
+
+/* line 7, ../sass/wireframe-alpha-default-wide.scss */
+#section-footer ul.menu li.expanded {
+  display: block;
+  float: left;
+  min-height: 190px;
+  position: relative;
+  width: 23%;
+}
+
+/* line 14, ../sass/wireframe-alpha-default-wide.scss */
+.not-front #zone-content aside {
+  width: 280px;
+}
+
+/* line 18, ../sass/wireframe-alpha-default-wide.scss */
+.not-front #zone-content #region-content {
+  width: 880px;
+}
+
+/* line 21, ../sass/wireframe-alpha-default-wide.scss */
+.container-12 article .grid-6 {
+  width: 580px;
+}
+
+/* line 24, ../sass/wireframe-alpha-default-wide.scss */
+.container-12 article .grid-3 {
+  width: 280px;
+}

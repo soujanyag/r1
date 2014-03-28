@@ -1,0 +1,31 @@
+/* 
+    Document   : 3col_responsive
+    Created on : 23 Sep, 2013, 5:01:05 PM
+    Author     : sateesh
+    Description:
+        Purpose of the stylesheet follows.
+*/
+
+root { 
+  display: block;
+}
+
+.col-wrap.col-two {
+	overflow: hidden;
+}
+.col-wrap.col-two > div {
+	width: 50%;
+	float: left;
+}
+.col-wrap.col-two .left {
+	width: 46%;
+}
+.col-wrap.col-two .right {
+	width: 54%;
+}
+.col-wrap.col-two .left .inner {
+	margin-right: 1em
+}
+.col-wrap.col-two .right .inner {
+	margin-left: 1em;
+}

@@ -1,0 +1,4 @@
+name = External Authentication API
+description = Provides simple integration for authenticating user login with external DB or Web Service
+core = 7.x
+version = 7.x.1

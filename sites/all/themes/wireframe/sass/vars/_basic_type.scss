@@ -1,0 +1,18 @@
+
+body {
+	font-family: 'Raleway','Century Gothic','Apple Gothic',sans-serif;
+}
+
+a {
+
+	color:$hyper-link-blue;
+	text-decoration: none;
+
+	&:hover {
+
+		text-decoration: underline;
+	}
+}
+
+
+
