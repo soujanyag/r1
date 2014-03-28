@@ -269,12 +269,12 @@ function _nt_utilities_normalize_spl_chars($str) {
   $str = ereg_replace(chr(ord("`")), "'", $str);        # `
   $str = ereg_replace(chr(ord("´")), "'", $str);        # ´
   $str = ereg_replace(chr(ord("“")), "\"", $str);        # “
-  $str = ereg_replace(chr(ord("�?")), "\"", $str);        # �?
+  $str = ereg_replace(chr(ord("�?")), "\"", $str);        # �?
   $str = ereg_replace(chr(ord("´")), "'", $str);        # ´
 
-  $unwanted_array = array('Š' => 'S', 'š' => 's', 'Ž' => 'Z', 'ž' => 'z', 'À' => 'A', '�?' => 'A', 'Â' => 'A', 'Ã' => 'A', 'Ä' => 'A', 'Å' => 'A', 'Æ' => 'A', 'Ç' => 'C', 'È' => 'E', 'É' => 'E',
-      'Ê' => 'E', 'Ë' => 'E', 'Ì' => 'I', '�?' => 'I', 'Î' => 'I', '�?' => 'I', 'Ñ' => 'N', 'Ò' => 'O', 'Ó' => 'O', 'Ô' => 'O', 'Õ' => 'O', 'Ö' => 'O', 'Ø' => 'O', 'Ù' => 'U',
-      'Ú' => 'U', 'Û' => 'U', 'Ü' => 'U', '�?' => 'Y', 'Þ' => 'B', 'ß' => 'Ss', 'à' => 'a', 'á' => 'a', 'â' => 'a', 'ã' => 'a', 'ä' => 'a', 'å' => 'a', 'æ' => 'a', 'ç' => 'c',
+  $unwanted_array = array('Š' => 'S', 'š' => 's', 'Ž' => 'Z', 'ž' => 'z', 'À' => 'A', '�?' => 'A', 'Â' => 'A', 'Ã' => 'A', 'Ä' => 'A', 'Å' => 'A', 'Æ' => 'A', 'Ç' => 'C', 'È' => 'E', 'É' => 'E',
+      'Ê' => 'E', 'Ë' => 'E', 'Ì' => 'I', '�?' => 'I', 'Î' => 'I', '�?' => 'I', 'Ñ' => 'N', 'Ò' => 'O', 'Ó' => 'O', 'Ô' => 'O', 'Õ' => 'O', 'Ö' => 'O', 'Ø' => 'O', 'Ù' => 'U',
+      'Ú' => 'U', 'Û' => 'U', 'Ü' => 'U', '�?' => 'Y', 'Þ' => 'B', 'ß' => 'Ss', 'à' => 'a', 'á' => 'a', 'â' => 'a', 'ã' => 'a', 'ä' => 'a', 'å' => 'a', 'æ' => 'a', 'ç' => 'c',
       'è' => 'e', 'é' => 'e', 'ê' => 'e', 'ë' => 'e', 'ì' => 'i', 'í' => 'i', 'î' => 'i', 'ï' => 'i', 'ð' => 'o', 'ñ' => 'n', 'ò' => 'o', 'ó' => 'o', 'ô' => 'o', 'õ' => 'o',
       'ö' => 'o', 'ø' => 'o', 'ù' => 'u', 'ú' => 'u', 'û' => 'u', 'ý' => 'y', 'ý' => 'y', 'þ' => 'b', 'ÿ' => 'y');
   $str = strtr($str, $unwanted_array);
@@ -945,3 +945,97 @@ function _nt_utilities_get_plain_terms($terms){
   return implode(", ", $names);
 }
 
+
+
+function _nt_utilities_taxonomy_get_nested_tree($terms = array(), $max_depth = NULL, $parent = 0, $parents_index = array(), $depth = 0) {
+  if (is_int($terms)) {
+    $terms = taxonomy_get_tree($terms);
+  }
+  foreach($terms as $term) {
+    foreach($term->parents as $term_parent) {
+      if ($term_parent == $parent) {
+        $return[$term->tid] = $term;
+      }
+      else {
+        $parents_index[$term_parent][$term->tid] = $term;
+      }
+    }
+  }
+  foreach($return as &$term) {
+    if (isset($parents_index[$term->tid]) && (is_null($max_depth) || $depth < $max_depth)) {
+      $term->children = _nt_utilities_taxonomy_get_nested_tree($parents_index[$term->tid], $max_depth, $term->tid, $parents_index, $depth + 1);
+    }
+  }
+  return $return;
+}
+/**
+ * To out put the taxonomy terms in a tested tree format.
+ */
+function _nt_utilities_output_taxonomy_nested_tree($tree) {
+    if (count($tree)) {
+        $output = '<ul class="taxonomy-tree">';
+        foreach ($tree as $term) {
+            $output .= '<li class="taxonomy-term">';
+            $path = 'taxonomy/term/' . $term->tid;
+            //if (!$term->children) 
+            $output .= l($term->name, $path);
+            $count  = term_nc($term->tid);
+            
+            $output .= " ( ".$count." ) ";
+            if ($term->children) {
+                $output .= _nt_utilities_output_taxonomy_nested_tree($term->children);
+            }
+            $output .= '</li>';
+        }
+        $output .= '</ul>';
+    }
+    return $output;
+}
+/**
+* @param tid
+* Term ID
+* @param child_count
+* TRUE - Also count all nodes in child terms (if they exists) - Default
+* FALSE - Count only nodes related to Term ID
+*/
+function _nt_utilities_term_nc($tid, $child_count = TRUE) {
+$tids = array($tid);
+ 
+if ($child_count) {
+$tids = array_merge($tids, term_get_children_ids($tid));
+}
+ 
+global $language;
+$langs = array($language->language);
+$langs[] = 'und';
+ 
+$query = db_select('taxonomy_index', 't');
+$query->condition('tid', $tids, 'IN');
+$query->join('node', 'n', 't.nid = n.nid');
+$query->condition('n.status', 1, '=');
+$query->condition('n.language', $langs, 'IN');
+ 
+$count = $query->countQuery()->execute()->fetchField();
+return $count;
+}
+ 
+/**
+* Retrieve ids of term children .
+*
+* @param $tid
+* The term's ID.
+* @param $tids
+* An array where ids of term children will be added
+*/
+function _nt_utilities_term_get_children_ids($tid) {
+$children = taxonomy_get_children($tid);
+$tids=array();
+ 
+if (!empty($children)) {
+foreach($children as $child) {
+$tids[] = $child->tid;
+$tids = array_merge($tids, term_get_children_ids($child->tid));
+}
+}
+return $tids;
+}

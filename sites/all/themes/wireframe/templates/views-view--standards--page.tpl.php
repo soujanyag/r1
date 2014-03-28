@@ -56,8 +56,8 @@
       <?php //print $rows;
       /******************** Custom code **********************/
       
-      $tree= taxonomy_get_nested_tree(5,3);
-      $output=output_taxonomy_nested_tree($tree);
+      $tree= _nt_utilities_taxonomy_get_nested_tree(5,3);
+      $output=_nt_utilities_output_taxonomy_nested_tree($tree);
       print $output;
       
       ?>
