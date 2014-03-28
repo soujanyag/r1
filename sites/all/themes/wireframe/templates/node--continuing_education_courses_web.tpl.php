@@ -14,23 +14,14 @@
                  print format_date($deadline,"long");
                  
             }
-            echo "<br />";
             print render($content['field_ce_location']);
-            echo "<br />";
             print render($content['field_ce_learning_outcomes']);
-            echo "<br />";
             print render($content['field_ce_course_brochure']);
-            echo "<br />";
             print render($content['field_ce_syllabus']);
-            echo "<br />";
             print render($content['field_ce_course_format']);
-            echo "<br />";
             print render($content['field_ce_course_sections']);
-            echo "<br />";
             print render($content['field_ce_product_code_']);
-            echo "<br />";
             print render($content['field_ce_category']);
-            echo "<br />";
             print render($content['field_ce_type']);
             
             
@@ -42,10 +33,9 @@
  
 <div class="grid-2">
       <span>
-    <?php print "<b>Next Session : </b><br/>";
+    <?php print "<div>Next Session : </div>";
           print get_startend_custom_format($node->field_ce_start_and_end_date['und'][0]['value'],$node->field_ce_start_and_end_date['und'][0]['value2']);?>
-          
-      </span><br /><br />
+      </span>
       <span>
           <?php print "<b>Cost : </b>"; 
           if($node->field_ce_member_cost['und'][0]['value']){
@@ -54,12 +44,10 @@
           if($node->field_ce_non_member_cost['und'][0]['value']){
                 print $node->field_ce_non_member_cost['und'][0]['value'] ." Non Members";
           }
-        echo "<br /><br />";
           print render($content['field_ce_ceus']);
           
           if($node->field_ce_mem_link['und'][0]['value'])
                 print l("Member Registration",$node->field_ce_mem_link['und'][0]['value']);
-          echo "</br>";
           
           if($node->field_non_mem_link['und'][0]['value'])
                 print l("Non Member Registration",$node->field_non_mem_link['und'][0]['value']);
@@ -70,4 +58,10 @@
 <div class="panel-panel panel-footer grid-6 alpha omega">
   <?php //print render($content); ?>
 </div>
-<?php } ?>
+<?php } 
+else {
+  ?>
+  TEASER CONTENT 
+  <?php
+}
+?>
